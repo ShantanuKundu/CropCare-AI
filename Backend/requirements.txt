@@ -14,7 +14,7 @@ python-jose[cryptography]
 python-dotenv
 pydantic[email]
 joblib
-sklearn
+scikit-learn
 pytesseract
 requests
 cloudinary
