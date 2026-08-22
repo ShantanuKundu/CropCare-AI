@@ -1,0 +1,142 @@
+{
+  "Apple___Apple_scab": {
+    "cause": "Fungal infection (Venturia inaequalis)",
+    "symptoms": "Dark olive spots on leaves and fruit",
+    "treatment": "Apply fungicide, remove infected leaves"
+  },
+  "Apple___Black_rot": {
+    "cause": "Fungal infection",
+    "symptoms": "Dark lesions on leaves and fruit rot",
+    "treatment": "Prune infected parts, apply fungicide"
+  },
+  "Apple___Cedar_apple_rust": {
+    "cause": "Fungal infection",
+    "symptoms": "Yellow-orange spots on leaves",
+    "treatment": "Use resistant varieties, apply fungicide"
+  },
+  "Apple___healthy": {
+    "cause": "No disease",
+    "symptoms": "Healthy plant",
+    "treatment": "No action needed"
+  },
+
+  "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": {
+    "cause": "Fungal infection",
+    "symptoms": "Gray rectangular lesions on leaves",
+    "treatment": "Use fungicide, rotate crops"
+  },
+  "Corn_(maize)___Common_rust_": {
+    "cause": "Fungal infection",
+    "symptoms": "Reddish-brown pustules on leaves",
+    "treatment": "Apply fungicide, resistant hybrids"
+  },
+  "Corn_(maize)___Northern_Leaf_Blight": {
+    "cause": "Fungal infection",
+    "symptoms": "Long gray-green lesions",
+    "treatment": "Crop rotation, fungicide"
+  },
+  "Corn_(maize)___healthy": {
+    "cause": "No disease",
+    "symptoms": "Healthy plant",
+    "treatment": "No action needed"
+  },
+
+  "Grape___Black_rot": {
+    "cause": "Fungal infection",
+    "symptoms": "Brown spots and shriveled fruit",
+    "treatment": "Prune infected parts, fungicide"
+  },
+  "Grape___Esca_(Black_Measles)": {
+    "cause": "Fungal disease",
+    "symptoms": "Dark spots on leaves and berries",
+    "treatment": "Remove infected vines"
+  },
+  "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)": {
+    "cause": "Fungal infection",
+    "symptoms": "Brown lesions on leaves",
+    "treatment": "Apply fungicide"
+  },
+  "Grape___healthy": {
+    "cause": "No disease",
+    "symptoms": "Healthy plant",
+    "treatment": "No action needed"
+  },
+
+  "Pepper,_bell___Bacterial_spot": {
+    "cause": "Bacterial infection",
+    "symptoms": "Water-soaked spots on leaves",
+    "treatment": "Use copper sprays, remove infected plants"
+  },
+  "Pepper,_bell___healthy": {
+    "cause": "No disease",
+    "symptoms": "Healthy plant",
+    "treatment": "No action needed"
+  },
+
+  "Potato___Early_blight": {
+    "cause": "Fungal infection",
+    "symptoms": "Brown spots with concentric rings",
+    "treatment": "Apply fungicide, remove infected leaves"
+  },
+  "Potato___Late_blight": {
+    "cause": "Phytophthora infestans",
+    "symptoms": "Dark lesions, white fungal growth",
+    "treatment": "Use fungicide, avoid moisture"
+  },
+  "Potato___healthy": {
+    "cause": "No disease",
+    "symptoms": "Healthy plant",
+    "treatment": "No action needed"
+  },
+
+  "Tomato___Bacterial_spot": {
+    "cause": "Bacterial infection",
+    "symptoms": "Small dark spots on leaves",
+    "treatment": "Remove infected leaves, copper spray"
+  },
+  "Tomato___Early_blight": {
+    "cause": "Fungal infection",
+    "symptoms": "Brown spots with rings",
+    "treatment": "Use fungicide"
+  },
+  "Tomato___Late_blight": {
+    "cause": "Fungal infection",
+    "symptoms": "Dark greasy lesions",
+    "treatment": "Apply fungicide"
+  },
+  "Tomato___Leaf_Mold": {
+    "cause": "Fungal infection",
+    "symptoms": "Yellow spots on upper leaves",
+    "treatment": "Improve ventilation, fungicide"
+  },
+  "Tomato___Septoria_leaf_spot": {
+    "cause": "Fungal infection",
+    "symptoms": "Small circular spots with gray centers",
+    "treatment": "Remove infected leaves"
+  },
+  "Tomato___Spider_mites Two-spotted_spider_mite": {
+    "cause": "Pest infestation",
+    "symptoms": "Yellow speckles and webbing",
+    "treatment": "Use insecticide or neem oil"
+  },
+  "Tomato___Target_Spot": {
+    "cause": "Fungal infection",
+    "symptoms": "Dark spots with concentric rings",
+    "treatment": "Apply fungicide"
+  },
+  "Tomato___Tomato_Yellow_Leaf_Curl_Virus": {
+    "cause": "Viral infection",
+    "symptoms": "Yellowing and curling leaves",
+    "treatment": "Control whiteflies, remove infected plants"
+  },
+  "Tomato___Tomato_mosaic_virus": {
+    "cause": "Viral infection",
+    "symptoms": "Mosaic pattern on leaves",
+    "treatment": "Remove infected plants, sanitize tools"
+  },
+  "Tomato___healthy": {
+    "cause": "No disease",
+    "symptoms": "Healthy plant",
+    "treatment": "No action needed"
+  }
+}

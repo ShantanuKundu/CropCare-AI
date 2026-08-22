@@ -1,0 +1,406 @@
+/* ─── Page Layout ─────────────────────────────────────────────────────── */
+.yield-page-header {
+  margin-bottom: 2rem;
+}
+
+.yield-header-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.yield-page-icon {
+  color: var(--primary);
+  filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.4));
+  flex-shrink: 0;
+}
+
+.yield-page-header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: white;
+  margin: 0 0 0.25rem;
+}
+
+.yield-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* ─── Form Panel ──────────────────────────────────────────────────────── */
+.yield-form-panel {
+  position: sticky;
+  top: 1.5rem;
+}
+
+.yield-form-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2rem;
+}
+
+.yield-form-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 1.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.yield-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* reuse existing .form-group from global/index.css */
+.yield-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: white;
+  font-size: 0.95rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.25s, background 0.25s;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+.yield-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  background-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+}
+
+.yield-select option {
+  background: #1a2332;
+  color: white;
+}
+
+.required-star {
+  color: #ef4444;
+  margin-left: 0.2rem;
+}
+
+.yield-optional-tag {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.8rem;
+  font-weight: 400;
+  margin-left: 0.35rem;
+}
+
+.yield-no-farms {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+}
+
+.yield-error-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.875rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
+  color: #fca5a5;
+  font-size: 0.9rem;
+}
+
+.yield-submit-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+/* ─── Result Panel ────────────────────────────────────────────────────── */
+.yield-result-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: fadeInUp 0.45s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.yield-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.75rem;
+  transition: border-color 0.3s;
+}
+
+.yield-card:hover {
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.yield-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 1.25rem;
+}
+
+/* Hero card */
+.yield-hero-card {
+  border-color: rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.yield-hero-crop {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.yield-crop-emoji {
+  font-size: 2.5rem;
+}
+
+.yield-crop-name {
+  font-size: 1.6rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #10b981, #14b8a6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Yield range grid (3 columns) */
+.yield-range-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.yield-range-item {
+  text-align: center;
+  padding: 1.25rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.yield-mid-highlighted {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+  transform: scale(1.03);
+}
+
+.yield-range-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.yield-range-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #10b981;
+}
+
+.yield-mid-highlighted .yield-range-value {
+  font-size: 2rem;
+}
+
+.yield-range-unit {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Tags */
+.yield-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.yield-tag {
+  padding: 0.3rem 0.85rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: #10b981;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+/* Production card */
+.yield-production-note {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 0 1rem;
+}
+
+/* Comparison */
+.yield-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.yield-comparison-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.yield-gap-item {
+  border-color: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.yield-comp-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.yield-comp-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+}
+
+.yield-comparison-note {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 1rem 0 0;
+  font-style: italic;
+}
+
+/* Limiting factors */
+.yield-factors-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.yield-factor-item {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.5;
+  padding: 0.6rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border-left: 3px solid rgba(234, 179, 8, 0.5);
+}
+
+.yield-factor-bullet {
+  color: #eab308;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* Weather */
+.yield-weather-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.yield-weather-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.yield-weather-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.yield-weather-val {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #14b8a6;
+}
+
+/* Spinner (reused from FertilizerRecommendation) */
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .yield-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .yield-form-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .yield-range-grid,
+  .yield-comparison-grid,
+  .yield-weather-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .yield-mid-highlighted {
+    transform: none;
+  }
+
+  .yield-page-header h1 {
+    font-size: 1.5rem;
+  }
+}

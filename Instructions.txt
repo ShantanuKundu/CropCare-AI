@@ -1,0 +1,18 @@
+**
+
+Download the modules, from the requirements.txt,  in a virtual environment
+
+Crop Disease Detection and Diagnosis:
+1. Crop Used [6]: Tomato, Potato, Maize, Pepper, Grape, Apple
+	Dataset URL: https://www.kaggle.com/datasets/abdallahalidev/plantvillage-dataset
+	Download all the folders of the above crops from the PlantVillage Dataset --> 
+	Total classes / folders: 27
+2. All the folders should be stored in PlantVillage folder 
+3. Make a Zip folder: "PlantVillage-6-Crops-zip"  
+4. Run the cropcare_disease_detection_and_diagnosis script and generate the keras and
+5. Move the files to the Backend folder
+
+Crop Recommendation:
+Run the crop_recommendation script to generate the pkl files
+2. Move the files to the Backend folder
+

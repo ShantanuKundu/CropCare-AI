@@ -1,0 +1,693 @@
+/* ═══════════════════════════════════════════════════════════════
+   Tools Pages — shared styles
+   Reuses the same design tokens as Fertilizer/Yield pages.
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Page Layout ─────────────────────────────────────────────── */
+.tools-page {
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  min-height: calc(100vh - 70px);
+}
+
+.tools-page-header {
+  margin-bottom: 2.5rem;
+}
+
+.tools-page-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.9rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--primary, #10b981);
+  letter-spacing: 0.04em;
+  margin-bottom: 0.9rem;
+  text-transform: uppercase;
+}
+
+.tools-page-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+}
+
+.tools-page-subtitle {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── Two-column layout (form left, result right) ─────────────── */
+.tools-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .tools-layout { grid-template-columns: 1fr; }
+}
+
+/* ── Form Panel ──────────────────────────────────────────────── */
+.tools-form-panel {
+  position: sticky;
+  top: 1.5rem;
+}
+
+.tools-form-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2rem;
+  backdrop-filter: blur(12px);
+}
+
+.tools-form-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--primary, #10b981);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 1.75rem 0;
+}
+
+.tools-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Form Groups (shared with FertilizerRecommendation pattern) ── */
+.tools-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.tools-form .form-group label {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.tools-form .form-group input,
+.tools-form .form-group select,
+.tools-form .form-group textarea {
+  padding: 0.8rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: white;
+  font-size: 0.95rem;
+  transition: all 0.25s ease;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tools-form .form-group input::placeholder { color: rgba(255, 255, 255, 0.3); }
+
+.tools-form .form-group input:focus,
+.tools-form .form-group select:focus,
+.tools-form .form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary, #10b981);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+}
+
+.tools-form select option { background: #0a0f1a; color: white; }
+
+.tools-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 500px) {
+  .tools-form-row { grid-template-columns: 1fr; }
+}
+
+/* ── Submit Button ───────────────────────────────────────────── */
+.tools-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+  font-family: inherit;
+  margin-top: 0.5rem;
+}
+
+.tools-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(16, 185, 129, 0.45);
+}
+
+.tools-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tools-spin { animation: tools-spin 0.8s linear infinite; }
+
+@keyframes tools-spin { to { transform: rotate(360deg); } }
+
+/* ── Error Banner ────────────────────────────────────────────── */
+.tools-error {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  color: #fca5a5;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+/* ── Result Panel ────────────────────────────────────────────── */
+.tools-result-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: tools-fadein 0.4s ease;
+}
+
+@keyframes tools-fadein {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.tools-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 4rem 2rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 2px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  text-align: center;
+}
+
+.tools-empty-icon { font-size: 3.5rem; opacity: 0.45; }
+
+.tools-empty-state h3 {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.tools-empty-state p {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.9rem;
+  margin: 0;
+  max-width: 280px;
+}
+
+/* ── Generic Result Card ─────────────────────────────────────── */
+.tools-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 1.75rem;
+  backdrop-filter: blur(10px);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tools-card:hover {
+  border-color: rgba(16, 185, 129, 0.25);
+  box-shadow: 0 8px 28px rgba(16, 185, 129, 0.1);
+}
+
+.tools-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--primary, #10b981);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 1.25rem 0;
+}
+
+/* ── Stat Grid (2 or 4 col) ──────────────────────────────────── */
+.tools-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 1rem;
+}
+
+.tools-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.tools-stat-label {
+  font-size: 0.73rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.tools-stat-value {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--primary, #10b981);
+  line-height: 1.1;
+}
+
+.tools-stat-unit {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Tips / bullet list ─────────────────────────────────────── */
+.tools-tips-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tools-tips-list li {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.6;
+  padding: 0.6rem 0.9rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid rgba(16, 185, 129, 0.4);
+  border-radius: 0 8px 8px 0;
+}
+
+/* ── Status badges for Crop Calendar ────────────────────────── */
+.tools-status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* open_now → bright green */
+.cal-status-open_now {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+.cal-item-open_now {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  background: rgba(16, 185, 129, 0.07) !important;
+}
+
+/* closing_soon → amber / orange */
+.cal-status-closing_soon {
+  background: rgba(245, 158, 11, 0.18);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+.cal-item-closing_soon {
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  background: rgba(245, 158, 11, 0.06) !important;
+}
+
+/* upcoming → blue */
+.cal-status-upcoming {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+.cal-item-upcoming {
+  border-color: rgba(59, 130, 246, 0.2) !important;
+  background: rgba(59, 130, 246, 0.05) !important;
+}
+
+/* just_closed → red */
+.cal-status-just_closed {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.cal-item-just_closed {
+  border-color: rgba(239, 68, 68, 0.2) !important;
+  background: rgba(239, 68, 68, 0.04) !important;
+}
+
+/* off_season → muted grey */
+.cal-status-off_season {
+  background: rgba(107, 114, 128, 0.15);
+  color: rgba(255, 255, 255, 0.38);
+  border: 1px solid rgba(107, 114, 128, 0.2);
+}
+.cal-item-off_season {
+  opacity: 0.65;
+}
+
+/* ── Mandi Price Table ──────────────────────────────────────── */
+.tools-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tools-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tools-table thead tr {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.tools-table th {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary, #10b981);
+  white-space: nowrap;
+}
+
+.tools-table td {
+  padding: 0.85rem 1rem;
+  color: rgba(255, 255, 255, 0.82);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tools-table tbody tr:hover td {
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.tools-table .price-col {
+  font-weight: 700;
+  color: var(--primary, #10b981);
+}
+
+/* ── Scheme Result Cards ────────────────────────────────────── */
+.tools-scheme-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tools-scheme-item {
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.tools-scheme-item:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.1);
+}
+
+.tools-scheme-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 0.4rem 0;
+}
+
+.tools-scheme-reason {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.tools-scheme-ineligible {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.tools-scheme-ineligible .tools-scheme-name {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Calendar crop list ─────────────────────────────────────── */
+.tools-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.tools-cal-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem 1.2rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.tools-cal-item:hover {
+  border-color: rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.tools-cal-crop-name {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: white;
+  text-transform: capitalize;
+}
+
+.tools-cal-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tools-cal-season {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── Filter bar (calendar/mandi) ─────────────────────────────── */
+.tools-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: flex-end;
+  padding: 1.25rem 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  margin-bottom: 1.5rem;
+}
+
+.tools-filter-bar .form-group {
+  flex: 1;
+  min-width: 160px;
+}
+
+.tools-filter-bar .form-group label {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.tools-filter-bar .form-group input,
+.tools-filter-bar .form-group select {
+  padding: 0.65rem 0.9rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9px;
+  color: white;
+  font-size: 0.9rem;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.tools-filter-bar .form-group input:focus,
+.tools-filter-bar .form-group select:focus {
+  outline: none;
+  border-color: var(--primary, #10b981);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.tools-filter-bar select option { background: #0a0f1a; color: white; }
+
+.tools-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  background: linear-gradient(135deg, #10b981, #14b8a6);
+  color: white;
+  border: none;
+  border-radius: 9px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  white-space: nowrap;
+  align-self: flex-end;
+  margin-bottom: 0;
+}
+
+.tools-filter-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.tools-filter-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Section divider ─────────────────────────────────────────── */
+.tools-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  margin: 1.25rem 0;
+}
+
+/* ── Boolean toggle row ─────────────────────────────────────── */
+.tools-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tools-toggle-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.tools-toggle {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.tools-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.tools-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.tools-toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.25s ease;
+}
+
+.tools-toggle input:checked + .tools-toggle-slider {
+  background: var(--primary, #10b981);
+}
+
+.tools-toggle input:checked + .tools-toggle-slider::before {
+  transform: translateX(18px);
+}
+
+/* ── Summary text ───────────────────────────────────────────── */
+.tools-summary-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+  line-height: 1.75;
+  margin: 0;
+}
+
+/* ── Loading skeleton shimmer ──────────────────────────────── */
+.tools-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tools-skeleton {
+  height: 80px;
+  border-radius: 12px;
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: tools-shimmer 1.5s infinite;
+}
+
+@keyframes tools-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Mobile ──────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .tools-page { padding: 1rem; }
+  .tools-page-title { font-size: 1.7rem; }
+  .tools-form-card { padding: 1.25rem; }
+  .tools-stat-grid { grid-template-columns: repeat(2, 1fr); }
+}

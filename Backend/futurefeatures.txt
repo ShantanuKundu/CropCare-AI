@@ -1,0 +1,233 @@
+🧠 1️⃣ Analytics Features (Very Powerful for Demo)
+✅ Most Common Disease (per user)
+GET /analytics/most-common-disease
+
+
+Returns:
+
+{
+  "disease": "Early Blight",
+  "count": 7
+}
+
+
+Why?
+
+Shows data intelligence.
+
+✅ Total Predictions Count
+GET /analytics/summary
+
+
+Returns:
+
+{
+  "total_predictions": 12,
+  "total_soil_tests": 4
+}
+
+✅ Average Soil pH
+GET /analytics/average-ph
+
+
+Shows soil trend over time.
+
+🌱 2️⃣ Fertilizer Recommendation Engine
+
+Based on:
+
+pH
+
+Nitrogen
+
+Phosphorus
+
+Potassium
+
+Endpoint:
+
+POST /recommend-fertilizer
+
+
+Response:
+
+{
+  "recommendation": "Apply Urea and DAP",
+  "reason": "Low nitrogen levels detected"
+}
+
+
+🔥 This turns it into decision-support system.
+
+📈 3️⃣ Soil Trend Tracking
+
+Return soil data grouped by date:
+
+GET /soil-trends
+
+
+Return:
+
+[
+  {"date": "2026-01-01", "pH": 6.2},
+  {"date": "2026-02-01", "pH": 6.5}
+]
+
+
+This is dashboard-ready.
+
+🔐 4️⃣ Role-Based Access Control (RBAC)
+
+Add:
+
+Admin user
+
+Farmer user
+
+Admin can:
+
+View all predictions
+
+View all SHC data
+
+Add column in users:
+
+role = Column(String, default="user")
+
+🗑 5️⃣ Delete Features
+
+Allow users to:
+
+DELETE /prediction/{id}
+DELETE /soil-record/{id}
+
+
+But only if record belongs to that user.
+
+Good security test.
+
+☁ 6️⃣ Image Storage
+
+Currently you only store filename.
+
+Upgrade to:
+
+Save images in /uploads
+
+Or Cloud (AWS S3)
+
+Store path in DB
+
+📤 7️⃣ Export Reports
+
+Generate:
+
+GET /export/predictions
+
+
+Returns CSV or PDF.
+
+Farmers can download history.
+
+⏳ 8️⃣ Refresh Token System
+
+Improve authentication:
+
+Short-lived access token
+
+Long-lived refresh token
+
+Token rotation
+
+Makes it production-level.
+
+📊 9️⃣ Dashboard Endpoint (Single Summary)
+GET /dashboard
+
+
+Returns:
+
+{
+  "total_predictions": 10,
+  "latest_prediction": "Late Blight",
+  "average_ph": 6.3,
+  "most_common_disease": "Early Blight"
+}
+
+
+Very impressive in demo.
+
+🛡 1️⃣0️⃣ Rate Limiting
+
+Prevent spam:
+
+Limit predictions per minute
+
+Use fastapi-limiter
+
+🧪 1️⃣1️⃣ Validation Improvements
+
+Confidence threshold
+
+File size validation
+
+Image dimension validation
+
+📜 1️⃣2️⃣ Logging & Monitoring
+
+Log every prediction
+
+Log failed login attempts
+
+Add middleware
+
+🧠 1️⃣3️⃣ ML Improvements
+
+Save top 3 predictions
+
+Save probability distribution
+
+Model versioning
+
+🔄 1️⃣4️⃣ Crop Recommendation Module
+
+Based on:
+
+Soil data
+
+pH
+
+Region
+
+Return:
+
+{
+  "recommended_crop": "Wheat",
+  "confidence": 0.87
+}
+
+📊 If You Want Research-Level Upgrade
+
+Add:
+
+Explainable AI output (why model predicted this)
+
+Highlight leaf regions (Grad-CAM)
+
+Attention maps
+
+That becomes publishable level.
+
+🏆 If You Want Placement-Level Upgrade
+
+Add:
+
+Pagination
+
+Swagger documentation improvements
+
+Proper error schema
+
+Environment-based config
+
+Dockerfile

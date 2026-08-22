@@ -1,0 +1,796 @@
+/* ─── Fertilizer Page Layout ───────────────────────────────── */
+.fert-icon { color: var(--primary); }
+
+.fert-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .fert-layout { grid-template-columns: 1fr; }
+}
+
+/* ─── Form Panel ─────────────────────────────────────────────── */
+.fert-form-panel { position: sticky; top: 1.5rem; }
+
+.fert-form-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 2rem;
+  backdrop-filter: blur(12px);
+}
+
+.fert-form-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--primary);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 1.75rem 0;
+}
+
+.fert-form { display: flex; flex-direction: column; gap: 1.25rem; }
+
+/* Shared field group */
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.form-group label {
+  color: rgba(255,255,255,0.75);
+  font-size: 0.88rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.required-star { color: #ef4444; }
+.optional-tag  { color: rgba(255,255,255,0.4); font-weight: 400; font-size: 0.8rem; }
+.unit          { color: rgba(255,255,255,0.4); font-size: 0.82rem; }
+
+.form-group input, .form-group select {
+  padding: 0.8rem 1rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  color: white;
+  font-size: 0.95rem;
+  transition: all 0.25s ease;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group input::placeholder { color: rgba(255,255,255,0.3); }
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: rgba(255,255,255,0.08);
+  box-shadow: 0 0 0 3px rgba(16,185,129,0.12);
+}
+
+select option { background: #0a0f1a; color: white; }
+
+/* Nutrient 2-column grid */
+.fert-nutrient-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 500px) { .fert-nutrient-grid { grid-template-columns: 1fr; } }
+
+.field-hint {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.4);
+  font-style: italic;
+}
+
+/* Error */
+.fert-error {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 10px;
+  color: #fca5a5;
+  font-size: 0.9rem;
+}
+
+/* Submit btn */
+.fert-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+  font-family: inherit;
+}
+.fert-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(16,185,129,0.45);
+}
+.fert-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.spin-icon { animation: fert-spin 0.8s linear infinite; }
+@keyframes fert-spin { to { transform: rotate(360deg); } }
+
+/* ─── Result Panel ───────────────────────────────────────────── */
+.fert-result-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: fert-fadein 0.4s ease;
+}
+@keyframes fert-fadein { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Generic result card */
+.fert-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 18px;
+  padding: 1.75rem;
+  backdrop-filter: blur(10px);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.fert-card:hover {
+  border-color: rgba(16,185,129,0.25);
+  box-shadow: 0 8px 28px rgba(16,185,129,0.1);
+}
+
+.fert-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 1.25rem 0;
+}
+
+/* ─── Soil Analysis Table ───────────────────────────────────── */
+.fert-soil-card { border-color: rgba(16,185,129,0.15); }
+
+.fert-soil-table { display: flex; flex-direction: column; gap: 0.1rem; }
+
+.fert-soil-thead {
+  display: grid;
+  grid-template-columns: 1.6fr 1.2fr 1.2fr 1.5fr;
+  padding: 0.5rem 0.75rem;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 0.35rem;
+}
+
+.fert-soil-row {
+  display: grid;
+  grid-template-columns: 1.6fr 1.2fr 1.2fr 1.5fr;
+  align-items: center;
+  padding: 0.7rem 0.75rem;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+.fert-soil-row:nth-child(even) { background: rgba(255,255,255,0.025); }
+.fert-soil-row:hover { background: rgba(16,185,129,0.06); }
+
+.fert-soil-label  { color: rgba(255,255,255,0.8); font-weight: 600; font-size: 0.9rem; }
+.fert-soil-value  { color: var(--primary); font-weight: 700; font-size: 0.95rem; }
+.fert-soil-status { font-weight: 700; font-size: 0.85rem; border-radius: 8px; padding: 0.2rem 0.5rem; }
+.fert-soil-ideal  { color: rgba(255,255,255,0.45); font-size: 0.82rem; }
+
+.status-optimal { background: rgba(16,185,129,0.12); }
+.status-low     { background: rgba(245,158,11,0.12); }
+.status-high    { background: rgba(239,68,68,0.12); }
+.status-unknown { background: rgba(107,114,128,0.12); color: #9ca3af !important; }
+
+/* ─── Summary Card ──────────────────────────────────────────── */
+.fert-summary-card { border-color: rgba(59,130,246,0.15); }
+.fert-summary-text {
+  color: rgba(255,255,255,0.82);
+  line-height: 1.75;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* ─── Primary Recommendation Card ─────────────────────────── */
+.fert-primary-card { border-color: rgba(16,185,129,0.2); }
+
+.fert-primary-inner { display: flex; flex-direction: column; gap: 1rem; }
+
+.fert-primary-name {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: white;
+  letter-spacing: -0.01em;
+}
+
+.fert-primary-meta {
+  color: rgba(255,255,255,0.6);
+  font-size: 0.92rem;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.fert-primary-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.fert-detail-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.9rem 1.25rem;
+  border-radius: 14px;
+  border: 1px solid;
+  flex: 1;
+  min-width: 200px;
+}
+
+.fert-chip-dosage {
+  background: rgba(139,92,246,0.08);
+  border-color: rgba(139,92,246,0.25);
+}
+.fert-chip-benefit {
+  background: rgba(16,185,129,0.08);
+  border-color: rgba(16,185,129,0.25);
+}
+.fert-chip-preparation {
+  background: rgba(245,158,11,0.08);
+  border-color: rgba(245,158,11,0.25);
+  flex-basis: 100%;
+}
+
+.fert-chip-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.45);
+}
+
+.fert-chip-val {
+  color: rgba(255,255,255,0.88);
+  font-size: 0.93rem;
+  line-height: 1.55;
+  font-weight: 500;
+}
+
+/* ─── pH Correction Card ────────────────────────────────────── */
+.fert-ph-card { border-color: rgba(245,158,11,0.2); }
+.fert-ph-text { color: rgba(255,255,255,0.82); line-height: 1.7; margin: 0; font-size: 0.95rem; }
+.fert-ph-content p   { color: rgba(255,255,255,0.82); line-height: 1.7; margin: 0.35rem 0; font-size: 0.94rem; }
+.fert-ph-content strong { color: #fcd34d; }
+.fert-ph-note { font-style: italic; color: rgba(255,255,255,0.55) !important; }
+
+/* ─── History – fertilizer badge ─────────────────────────── */
+.fert-hist-type-badge {
+  display: inline-block;
+  margin-left: 0.6rem;
+  padding: 0.2rem 0.6rem;
+  background: rgba(16,185,129,0.15);
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: 20px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--primary);
+  vertical-align: middle;
+}
+
+.fert-hist-summary-preview {
+  color: rgba(255,255,255,0.55);
+  font-size: 0.87rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ─── Divider (kept for other usages) ──────────────────── */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 2rem 0;
+  color: rgba(255,255,255,0.4);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.divider span { padding: 0 1rem; }
+
+
+/* Fertilizer-specific overrides and additions */
+.recommended-fertilizer {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(20, 184, 166, 0.1);
+  border: 2px solid rgba(20, 184, 166, 0.3);
+  border-radius: 16px;
+  margin-bottom: 2rem;
+}
+
+.fertilizer-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 4px 10px rgba(20, 184, 166, 0.3));
+}
+
+.recommended-fertilizer h3 {
+  font-size: 2rem;
+  color: white;
+  margin: 0 0 1rem 0;
+}
+
+.dosage-badge {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: rgba(20, 184, 166, 0.2);
+  border: 1px solid rgba(20, 184, 166, 0.4);
+  border-radius: 20px;
+  color: var(--secondary);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.recommendation-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.detail-item {
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.detail-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(20, 184, 166, 0.2);
+  transform: translateX(5px);
+}
+
+.detail-item h4 {
+  color: var(--secondary);
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detail-item p {
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.fertilizer-emoji {
+  font-size: 1.3rem;
+}
+
+.alt-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.alt-name {
+  font-weight: 600;
+  color: white;
+}
+
+.alt-dosage {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Select styling */
+select {
+  padding: 0.875rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+select option {
+  background: #0a0f1a;
+  color: white;
+  padding: 0.5rem;
+}
+
+/* Enhanced SHC Upload Card */
+.shc-upload-card {
+  background: rgba(20, 184, 166, 0.05);
+  border: 2px dashed rgba(20, 184, 166, 0.3);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.shc-upload-card:hover {
+  background: rgba(20, 184, 166, 0.08);
+  border-color: rgba(20, 184, 166, 0.5);
+}
+
+.upload-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  color: var(--secondary);
+}
+
+.upload-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.upload-description {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.upload-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.upload-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.upload-button:active {
+  transform: translateY(0);
+}
+
+.upload-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.uploaded-file-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 10px;
+  color: var(--primary);
+  font-size: 0.9rem;
+}
+
+.file-icon {
+  font-size: 1.2rem;
+}
+
+.file-name {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 2rem 0;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider span {
+  padding: 0 1rem;
+}
+
+/* Field Hint */
+.field-hint {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .recommendation-details {
+    gap: 1rem;
+  }
+
+  .detail-item {
+    padding: 1rem;
+  }
+
+  .shc-upload-card {
+    padding: 1.5rem;
+  }
+
+  .upload-button {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .upload-header h3 {
+    font-size: 1.1rem;
+  }
+}
+
+/* ─── SHC Upload Section ──────────────────────────────────── */
+.fert-shc-section {
+  background: rgba(20, 184, 166, 0.04);
+  border: 1.5px dashed rgba(20, 184, 166, 0.3);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+.fert-shc-section:hover {
+  background: rgba(20, 184, 166, 0.07);
+  border-color: rgba(20, 184, 166, 0.45);
+}
+
+.fert-shc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--secondary, #14b8a6);
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+
+.fert-shc-desc {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  margin: 0 0 1.1rem 0;
+}
+
+/* Clickable drop area */
+.fert-shc-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 1.5rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: center;
+}
+.fert-shc-drop:hover:not(.fert-shc-drop--loading) {
+  background: rgba(16, 185, 129, 0.07);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+.fert-shc-drop--loading {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.fert-shc-icon {
+  color: var(--primary, #10b981);
+}
+.fert-shc-drop-text {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.fert-shc-drop-hint {
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 0.78rem;
+}
+
+/* Uploaded file row */
+.fert-shc-uploaded {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+.fert-shc-file-icon { font-size: 1.2rem; }
+.fert-shc-file-name {
+  flex: 1;
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fert-shc-clear-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+.fert-shc-clear-btn:hover { color: #fca5a5; }
+
+/* Success banner */
+.fert-shc-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 10px;
+  color: #6ee7b7;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.fert-shc-success svg { flex-shrink: 0; margin-top: 1px; }
+
+/* ── Extract Data button ────────────────────────────────────── */
+.fert-extract-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 0.85rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, rgba(16,185,129,0.18) 0%, rgba(20,184,166,0.18) 100%);
+  border: 1.5px solid rgba(16, 185, 129, 0.45);
+  border-radius: 10px;
+  color: #6ee7b7;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+}
+.fert-extract-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(16,185,129,0.28) 0%, rgba(20,184,166,0.28) 100%);
+  border-color: rgba(16, 185, 129, 0.7);
+  color: #a7f3d0;
+  transform: translateY(-1px);
+}
+.fert-extract-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* ─── OR Divider ───────────────────────────────────────────── */
+.fert-or-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.fert-or-divider::before,
+.fert-or-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.fert-or-divider span { padding: 0 0.9rem; }
+
+/* ─── Auto-fill highlight ──────────────────────────────────── */
+/* Input that was filled by SHC */
+input.fert-autofilled {
+  border-color: rgba(16, 185, 129, 0.55) !important;
+  background: rgba(16, 185, 129, 0.07) !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+  color: #a7f3d0 !important;
+}
+
+/* Badge next to label */
+.fert-autofill-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.45rem;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--primary, #10b981);
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}

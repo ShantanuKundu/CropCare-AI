@@ -1,0 +1,25 @@
+# Large zip archives
+*.zip
+
+# PDF and Word documents (optional: remove if you want to push them)
+*.pdf
+*.docx
+
+# Large datasets - store on Kaggle/Google Drive instead
+Datasets/
+
+# Jupyter notebooks & Research (optional - keep if needed)
+Jupyter Codes/
+Research Papers/
+
+# Sample images at root level
+*.png
+*.jpg
+*.jpeg
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.gitkeep
