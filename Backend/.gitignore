@@ -14,13 +14,6 @@ __pycache__/
 *.pyd
 *.pyc
 
-# ML Model files (too large for GitHub — store on Google Drive / HuggingFace / Git LFS)
-*.keras
-*.pkl
-*.h5
-*.pt
-*.pth
-
 # Uploaded images / temp files
 *.png
 *.jpg
