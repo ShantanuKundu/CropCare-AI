@@ -72,6 +72,7 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
         # Production - Vercel frontend
+        "https://crop-care-ai-phi.vercel.app",
         "https://cropcare-ai.vercel.app",
         "https://cropcare-ai-shantanukundus-projects.vercel.app",
         "https://cropcare-ai-git-main-shantanukundus-projects.vercel.app",
