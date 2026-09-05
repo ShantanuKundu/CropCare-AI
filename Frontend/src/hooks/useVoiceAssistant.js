@@ -38,10 +38,46 @@ export function useVoiceAssistant() {
   const languageRef      = useRef(language);
   const navigateRef      = useRef(navigate);
   const tRef             = useRef(t);
+  const workerRef = useRef(null);
+  const [modelReady, setModelReady] = useState(false);
+  const [modelLoadProgress, setModelLoadProgress] = useState(0);
+  const [isInitializing, setIsInitializing] = useState(false);
 
   useEffect(() => { languageRef.current = language; }, [language]);
   useEffect(() => { navigateRef.current = navigate; }, [navigate]);
   useEffect(() => { tRef.current = t; }, [t]);
+  useEffect(() => {
+  workerRef.current = new Worker(
+    new URL('../workers/stt.worker.js', import.meta.url),
+    { type: 'module' }
+  );
+
+  workerRef.current.postMessage({ type: 'load' });
+
+  workerRef.current.onmessage = (e) => {
+  console.log('[Whisper]', e.data);
+
+  const { type, text, progress } = e.data;
+
+  if (type === 'ready') {
+    setModelReady(true);
+  }
+
+  if (type === 'loading') {
+    setModelLoadProgress(progress || 0);
+  }
+
+  if (type === 'result') {
+    handleTranscript(text);
+  }
+
+  if (type === 'error') {
+    console.error('[Whisper Error]', e.data.message);
+  }
+};
+
+  return () => workerRef.current?.terminate();
+}, []);
 
   // ── TTS ─────────────────────────────────────────────────────────────────────
   const speak = useCallback((text) => {
@@ -79,44 +115,7 @@ export function useVoiceAssistant() {
     }
   }, [speak]);
 
-  // ── Send audio to backend for transcription ─────────────────────────────────
-  const transcribeOnBackend = useCallback(async (audioBlob, bcp47) => {
-    setIsProcessing(true);
-    try {
-      const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.webm');
-      formData.append('language', bcp47);
-
-      const res = await fetch(`${API_BASE}/api/transcribe`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-
-      console.log('[Voice] 📡 Backend response:', data);
-
-      if (data.text) {
-        handleTranscript(data.text);
-      } else if (data.error === 'no-speech') {
-        setVoiceError('no-speech');
-        setTimeout(() => setVoiceError(null), 4000);
-      } else if (data.error === 'network') {
-        setVoiceError('network');
-        setTimeout(() => setVoiceError(null), 5000);
-      } else {
-        setVoiceError('unknown');
-        setTimeout(() => setVoiceError(null), 4000);
-      }
-    } catch (err) {
-      console.error('[Voice] Backend transcription error:', err.message);
-      setVoiceError('backend-error');
-      setTimeout(() => setVoiceError(null), 5000);
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [handleTranscript]);
+ 
 
   // ── Start recording ─────────────────────────────────────────────────────────
   const startListening = useCallback(async () => {
@@ -131,13 +130,22 @@ export function useVoiceAssistant() {
     try {
       stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          echoCancellation: false,   // raw audio — bypass Windows enhancements
-          noiseSuppression: false,
-          autoGainControl:  false,
+          deviceId: {
+            exact: '61a30323444520e77d0c2f2413dc89355b007c57b5afa63f3b71b4d206a7489b'
+            },
+          echoCancellation: true,   // raw audio — bypass Windows enhancements
+          noiseSuppression: true,
+          autoGainControl:  true,
           sampleRate:       16000,
         }
       });
-    } catch (err) {
+
+      console.log(
+    '[MIC]',
+    stream.getAudioTracks()[0].label
+  );
+    } 
+    catch (err) {
       console.error('[Voice] getUserMedia failed:', err.name);
       setVoiceError(err.name === 'NotAllowedError' ? 'not-allowed' : 'audio-capture');
       setTimeout(() => setVoiceError(null), 6000);
@@ -145,6 +153,7 @@ export function useVoiceAssistant() {
     }
 
     const mr = new MediaRecorder(stream);
+    console.log('[MIC SETTINGS]', stream.getAudioTracks()[0].getSettings());  
     mediaRecorderRef.current = mr;
     audioChunksRef.current   = [];
 
@@ -154,7 +163,55 @@ export function useVoiceAssistant() {
       stream.getTracks().forEach(t => t.stop());
       const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
       console.log('[Voice] 🎙️ Recording stopped. Blob size:', blob.size, 'bytes');
-      transcribeOnBackend(blob, bcp47);
+      (async () => {
+        const arrayBuffer = await blob.arrayBuffer();
+
+        const audioContext = new AudioContext();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+       
+      const source = audioBuffer.getChannelData(0);  
+      
+      let peak = 0;
+
+      for (let i = 0; i < source.length; i++) {
+        const v = Math.abs(source[i]);
+        if (v > peak) peak = v;
+      }
+
+      console.log('[SOURCE PEAK]', peak);
+      
+      const targetRate = 16000;
+      const ratio = audioBuffer.sampleRate / targetRate;
+      const newLength = Math.round(audioBuffer.length / ratio);
+
+      const audio = new Float32Array(newLength);
+
+      for (let i = 0; i < newLength; i++) {
+        audio[i] = source[Math.floor(i * ratio)];
+      }
+
+          let audioPeak = 0;
+
+          for (let i = 0; i < audio.length; i++) {
+            const v = Math.abs(audio[i]);
+            if (v > audioPeak) audioPeak = v;
+          }
+
+          console.log(
+            '[Audio Stats]',
+            'peak=', audioPeak,
+            'len=', audio.length
+          );
+
+        
+
+        console.log('[RESAMPLED LEN]', audio.length);
+        workerRef.current.postMessage({
+          type: 'transcribe',
+          audio,
+          language: bcp47,
+        });
+      })(); 
       setIsListening(false);
     };
 
@@ -169,7 +226,7 @@ export function useVoiceAssistant() {
         mr.stop();
       }
     }, 6000);
-  }, [isListening, isProcessing, transcribeOnBackend]);
+  }, [isListening, isProcessing]);
 
   // ── Stop recording early ────────────────────────────────────────────────────
   const stopListening = useCallback(() => {

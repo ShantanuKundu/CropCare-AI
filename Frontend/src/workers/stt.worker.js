@@ -21,7 +21,7 @@
 
 import { pipeline, env } from '@huggingface/transformers';
 
-const MODEL_ID = 'onnx-community/whisper-tiny';
+const MODEL_ID = 'onnx-community/whisper-base';
 
 env.allowLocalModels = false;
 env.useBrowserCache  = true;
@@ -51,14 +51,14 @@ async function loadModel() {
     console.warn('[STTWorker] ⏰ Model init timed out after 30s');
     self.postMessage({ type: 'timeout' });
     loading = false;
-  }, 30000);
+  }, 120000);
 
   try {
     transcriber = await pipeline(
       'automatic-speech-recognition',
       MODEL_ID,
       {
-        dtype: 'q8',
+        dtype: 'fp32',
         device: 'wasm',
         progress_callback: onProgress,
       }
@@ -92,6 +92,7 @@ async function transcribe(audioFloat32, language) {
       task: 'transcribe',
       return_timestamps: false,
     });
+    
     const text = (output?.text || '').trim();
     self.postMessage({ type: 'result', text });
   } catch (err) {
