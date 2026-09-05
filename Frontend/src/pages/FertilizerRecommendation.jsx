@@ -6,6 +6,8 @@ import {
 import { fertilizerService } from '../services/fertilizerService';
 import { soilService } from '../services/soilService';
 import { useLanguage } from '../context/LanguageContext';
+import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
+import { useVoiceFill, FERTILIZER_FIELDS } from '../utils/voiceFormFill';
 import './FertilizerRecommendation.css';
 
 /* ─── helpers ──────────────────────────────────────────────────────────── */
@@ -30,6 +32,7 @@ const statusClass = (status) => {
 /* ─── component ────────────────────────────────────────────────────────── */
 const FertilizerRecommendation = () => {
   const { t } = useLanguage();
+  const { speak } = useVoiceAssistant();
 
   /* form state */
   const [formData, setFormData] = useState({
@@ -40,6 +43,13 @@ const FertilizerRecommendation = () => {
     potassium: '',
     ph: '',
   });
+
+  // ── Step 11b: Voice form fill ──
+  useVoiceFill(
+    FERTILIZER_FIELDS,
+    (field, value) => setFormData(prev => ({ ...prev, [field]: value })),
+    speak
+  );
 
   /* which fields were auto-filled by SHC (to highlight them) */
   const [autoFilledFields, setAutoFilledFields] = useState(new Set());
@@ -136,6 +146,11 @@ const FertilizerRecommendation = () => {
     try {
       const data = await fertilizerService.getFertilizerRecommendation(payload);
       setResult(data);
+      // ── Step 10c: Auto-speak primary recommendation ──
+      const primary = data?.recommendations?.[0];
+      if (primary?.fertilizer_name) {
+        speak(`${t('fertilizerRecommendation')}: ${primary.fertilizer_name}.`);
+      }
       setTimeout(() => {
         document.getElementById('fert-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);

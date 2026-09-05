@@ -5,11 +5,21 @@ import { predictionService } from '../services/predictionService';
 import { soilService } from '../services/soilService';
 import { farmService } from '../services/farmService';
 import { Activity, Clock, Map, X, Plus } from 'lucide-react';
+import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
+import { useVoiceFill, ADD_FARM_FIELDS } from '../utils/voiceFormFill';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { speak } = useVoiceAssistant();
+
+  // ── Step 11f: Voice fill for Add Farm modal ──
+  useVoiceFill(
+    ADD_FARM_FIELDS,
+    (field, value) => setFarmForm(prev => ({ ...prev, [field]: value })),
+    speak
+  );
   const [predictions, setPredictions] = useState([]);
   const [soilData, setSoilData] = useState([]);
   const [farms, setFarms] = useState([]);

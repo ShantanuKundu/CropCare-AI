@@ -6,6 +6,8 @@ import {
 import { yieldService } from '../services/yieldService';
 import { farmService } from '../services/farmService';
 import { useLanguage } from '../context/LanguageContext';
+import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
+import { useVoiceFill, YIELD_FIELDS } from '../utils/voiceFormFill';
 import './YieldPrediction.css';
 
 /* ─── helpers ──────────────────────────────────────────────────────────── */
@@ -35,6 +37,7 @@ function cropEmoji(name = '') {
 /* ─── component ────────────────────────────────────────────────────────── */
 const YieldPrediction = () => {
   const { t } = useLanguage();
+  const { speak } = useVoiceAssistant();
 
   /* form state */
   const [formData, setFormData] = useState({
@@ -44,6 +47,13 @@ const YieldPrediction = () => {
     farm_id: '',
     irrigation_type: 'rainfed',
   });
+
+  // ── Step 11c: Voice form fill ──
+  useVoiceFill(
+    YIELD_FIELDS,
+    (field, value) => setFormData(prev => ({ ...prev, [field]: value })),
+    speak
+  );
 
   /* farms list */
   const [farms, setFarms] = useState([]);
@@ -94,6 +104,11 @@ const YieldPrediction = () => {
 
       const data = await yieldService.predictYield(payload);
       setResult(data);
+      // ── Step 10d: Auto-speak yield result ──
+      if (data?.predicted_yield_kg_per_hectare != null) {
+        const crop = formData.crop || data?.crop || '';
+        speak(`${crop} ${t('yieldResult') || 'yield'}: ${data.predicted_yield_kg_per_hectare.toFixed(0)} kg per hectare.`);
+      }
       setTimeout(() => {
         document.getElementById('yield-result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);

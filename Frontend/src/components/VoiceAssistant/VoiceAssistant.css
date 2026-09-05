@@ -1,0 +1,364 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   VoiceAssistant.css
+   Styles for the floating voice assistant UI.
+   All selectors are prefixed with .va- to avoid collisions.
+───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Root container — fixed bottom-right ──────────────────────────────────── */
+.va-root {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: none; /* children opt in */
+}
+
+/* ── FAB button group ─────────────────────────────────────────────────────── */
+.va-fab-group {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: all;
+}
+
+/* ── Main mic button ──────────────────────────────────────────────────────── */
+.va-mic-btn {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(22, 163, 74, 0.45);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+  outline: none;
+}
+
+.va-mic-btn:hover:not(:disabled) {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(22, 163, 74, 0.55);
+}
+
+.va-mic-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* Listening state — red pulsing */
+.va-mic-btn.va-listening {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.5);
+  animation: va-mic-breathe 1.4s ease-in-out infinite;
+}
+
+/* Speaking state — amber */
+.va-mic-btn.va-speaking {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  box-shadow: 0 4px 20px rgba(217, 119, 6, 0.5);
+  cursor: default;
+}
+
+/* Loading state — muted grey */
+.va-mic-btn.va-loading {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  box-shadow: 0 4px 16px rgba(107, 114, 128, 0.35);
+}
+
+.va-mic-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+@keyframes va-mic-breathe {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.06); }
+}
+
+/* ── Pulse rings (listening) ─────────────────────────────────────────────── */
+.va-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(220, 38, 38, 0.5);
+  animation: va-ring-expand 1.6s ease-out infinite;
+  pointer-events: none;
+}
+
+.va-ring-1 { width: 80px;  height: 80px;  animation-delay: 0s; }
+.va-ring-2 { width: 100px; height: 100px; animation-delay: 0.5s; }
+
+@keyframes va-ring-expand {
+  0%   { transform: scale(0.75); opacity: 0.7; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+
+/* ── Mic SVG icon ────────────────────────────────────────────────────────── */
+.va-mic-svg {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+/* ── Soundwave bars (TTS indicator) ─────────────────────────────────────── */
+.va-soundwave {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 26px;
+}
+
+.va-bar {
+  display: block;
+  width: 4px;
+  border-radius: 2px;
+  background: #fff;
+  animation: va-bar-bounce 0.8s ease-in-out infinite;
+}
+
+.va-bar-1 { height: 8px;  animation-delay: 0.0s; }
+.va-bar-2 { height: 16px; animation-delay: 0.1s; }
+.va-bar-3 { height: 22px; animation-delay: 0.2s; }
+.va-bar-4 { height: 16px; animation-delay: 0.3s; }
+.va-bar-5 { height: 8px;  animation-delay: 0.4s; }
+
+@keyframes va-bar-bounce {
+  0%, 100% { transform: scaleY(0.4); opacity: 0.6; }
+  50%       { transform: scaleY(1.0); opacity: 1.0; }
+}
+
+/* ── Help button ─────────────────────────────────────────────────────────── */
+.va-help-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.25);
+  background: rgba(17, 24, 39, 0.85);
+  color: #d1fae5;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  transition: background 0.2s, transform 0.15s;
+  pointer-events: all;
+  align-self: center;
+}
+
+.va-help-btn:hover {
+  background: rgba(22, 163, 74, 0.85);
+  transform: scale(1.1);
+}
+
+/* ── Help tooltip ─────────────────────────────────────────────────────────── */
+.va-help-tooltip {
+  position: relative;
+  pointer-events: all;
+  background: rgba(17, 24, 39, 0.95);
+  border: 1px solid rgba(22, 163, 74, 0.4);
+  border-radius: 14px;
+  padding: 14px 16px;
+  max-width: 280px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  animation: va-fade-in 0.2s ease;
+}
+
+.va-help-title {
+  color: #86efac;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+
+.va-help-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.va-help-list li {
+  color: #d1fae5;
+  font-size: 13px;
+  line-height: 1.4;
+  padding: 5px 8px;
+  background: rgba(22, 163, 74, 0.1);
+  border-radius: 8px;
+  border-left: 3px solid #16a34a;
+}
+
+.va-help-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+}
+
+.va-help-close:hover { color: #fff; }
+
+/* ── Transcript bubble ───────────────────────────────────────────────────── */
+.va-transcript-bubble {
+  pointer-events: none;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid rgba(22, 163, 74, 0.35);
+  border-radius: 12px;
+  padding: 10px 14px;
+  max-width: 260px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+  animation: va-fade-in 0.2s ease;
+}
+
+.va-transcript-text {
+  color: #d1fae5;
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.45;
+}
+
+/* ── Status labels ───────────────────────────────────────────────────────── */
+.va-status-label {
+  pointer-events: none;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 5px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  animation: va-fade-in 0.2s ease;
+}
+
+.va-listening-label {
+  background: rgba(220, 38, 38, 0.85);
+  color: #fff;
+}
+
+.va-speaking-label {
+  background: rgba(217, 119, 6, 0.85);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Model progress bar ──────────────────────────────────────────────────── */
+.va-model-bar {
+  pointer-events: none;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid rgba(22, 163, 74, 0.35);
+  border-radius: 12px;
+  padding: 10px 14px;
+  width: 240px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  animation: va-fade-in 0.3s ease;
+}
+
+.va-model-label {
+  display: block;
+  color: #86efac;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 7px;
+}
+
+.va-progress-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.va-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #16a34a, #4ade80);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+/* Pulsing shimmer when at 100% and WASM is initializing */
+.va-progress-pulse {
+  background: linear-gradient(90deg, #16a34a, #4ade80, #86efac, #4ade80, #16a34a);
+  background-size: 200% 100%;
+  animation: va-shimmer 1.5s linear infinite;
+}
+
+@keyframes va-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Ready toast ─────────────────────────────────────────────────────────── */
+.va-toast {
+  pointer-events: none;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  animation: va-toast-show 3s ease forwards;
+}
+
+.va-toast-ready {
+  background: rgba(22, 163, 74, 0.88);
+  color: #fff;
+}
+
+.va-toast-error {
+  background: rgba(185, 28, 28, 0.92);
+  color: #fff;
+  pointer-events: all;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 10px 14px;
+  border-radius: 12px;
+  max-width: 280px;
+  line-height: 1.5;
+  border: 1px solid rgba(252, 165, 165, 0.4);
+  box-shadow: 0 4px 20px rgba(185, 28, 28, 0.4);
+  animation: va-fade-in 0.25s ease;
+}
+
+
+@keyframes va-toast-show {
+  0%   { opacity: 0; transform: translateY(6px); }
+  15%  { opacity: 1; transform: translateY(0); }
+  75%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── General fade-in ─────────────────────────────────────────────────────── */
+@keyframes va-fade-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)  scale(1); }
+}
+
+/* ── Mobile adjustments ──────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .va-root   { bottom: 20px; right: 16px; }
+  .va-mic-btn { width: 54px; height: 54px; }
+  .va-help-tooltip,
+  .va-transcript-bubble,
+  .va-model-bar { max-width: 220px; }
+}

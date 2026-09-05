@@ -4,6 +4,8 @@ import { soilService } from '../services/soilService';
 import { cropService } from '../services/cropService';
 import { farmService } from '../services/farmService';
 import { useLanguage } from '../context/LanguageContext';
+import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
+import { useVoiceFill, CROP_REC_FIELDS } from '../utils/voiceFormFill';
 import './CropRecommendation.css';
 
 // Auto-detect season from current month
@@ -40,6 +42,17 @@ const SEASONS = ['Kharif', 'Rabi', 'Zaid'];
 
 const CropRecommendation = () => {
   const { t } = useLanguage();
+  const { speak } = useVoiceAssistant();
+
+  // ── Step 11a: Voice form fill — soil fields + season ──
+  useVoiceFill(
+    CROP_REC_FIELDS,
+    (field, value) => {
+      if (field === 'season') setSeason(value);
+      else setSoilData(prev => ({ ...prev, [field]: value }));
+    },
+    speak
+  );
 
   // ── Farms ─────────────────────────────────
   const [farms, setFarms] = useState([]);
@@ -158,6 +171,11 @@ const CropRecommendation = () => {
       setRecommendations(top3);
       setWeather(data.weather || null);
       setResultSeason(data.season || season);
+
+      // ── Step 10b: Auto-speak top crop ──
+      if (top3.length > 0) {
+        speak(`${t('topCropRec')}: ${top3[0].crop}. ${t('confidence')}: ${Number(top3[0].confidence).toFixed(0)}%.`);
+      }
 
       console.log("DISPLAYING:", top3);
 

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { ShieldCheck, Loader2, AlertCircle, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
 import { toolsService } from '../services/toolsService';
 import { useLanguage } from '../context/LanguageContext';
+import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
+import { useVoiceFill, SCHEME_FIELDS } from '../utils/voiceFormFill';
 import './Tools.css';
 
 const INDIAN_STATES = [
@@ -27,6 +29,7 @@ const Toggle = ({ id, checked, onChange, label }) => (
 
 const SchemeEligibility = () => {
   const { t } = useLanguage();
+  const { speak } = useVoiceAssistant();
   const [form, setForm] = useState({
     crop: '',
     land_area_hectares: '',
@@ -43,6 +46,13 @@ const SchemeEligibility = () => {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError]    = useState('');
+
+  // ── Step 11e: Voice form fill ──
+  useVoiceFill(
+    SCHEME_FIELDS,
+    (field, value) => setForm(f => ({ ...f, [field]: value })),
+    speak
+  );
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -68,6 +78,10 @@ const SchemeEligibility = () => {
       const data = await toolsService.checkSchemeEligibility(payload);
       console.log('[SchemeEligibility] response ←', data);
       setResult(data);
+      // ── Step 10f: Auto-speak eligible scheme count ──
+      const count = data?.eligible_count ?? 0;
+      const total = data?.total_schemes_checked ?? 0;
+      speak(`${t('schemeEligibleLabel')}: ${count} out of ${total}.`);
     } catch (err) {
       console.error('[SchemeEligibility] error:', err);
       setError(err?.response?.data?.detail || 'Failed to check eligibility. Please try again.');

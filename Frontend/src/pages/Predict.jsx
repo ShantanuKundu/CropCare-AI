@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { predictionService } from '../services/predictionService';
 import { useLanguage } from '../context/LanguageContext';
+import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
 import { RefreshCw } from 'lucide-react';
 import './Predict.css';
 
@@ -14,6 +15,7 @@ function severityClass(severity = '') {
 
 const Predict = () => {
   const { t } = useLanguage();
+  const { speak } = useVoiceAssistant();
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [result, setResult] = useState(null);
@@ -47,6 +49,14 @@ const Predict = () => {
     try {
       const data = await predictionService.predictDisease(selectedFile);
       setResult(data);
+      // ── Step 10a: Auto-speak result ──
+      const isHealthyResult = data?.disease?.toLowerCase().includes('healthy');
+      const conf = data?.confidence ? `${(data.confidence * 100).toFixed(0)}%` : '';
+      if (isHealthyResult) {
+        speak(t('healthyMessage'));
+      } else if (data?.disease) {
+        speak(`${data.disease}. ${t('confidence')}: ${conf}.${data.severity ? ` ${t('severity')}: ${data.severity}.` : ''}`);
+      }
       // Cache full result (severity/cause/symptoms/treatment) in sessionStorage
       try {
         const cache = JSON.parse(sessionStorage.getItem('predictionDetailsCache') || '{}');

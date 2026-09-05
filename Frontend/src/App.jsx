@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/layout/Navbar';
+import VoiceAssistant from './components/VoiceAssistant/VoiceAssistant';
 
 // Pages
 import Login from './pages/Login';
@@ -29,6 +30,7 @@ function App() {
         <Router>
           <div className="app-container">
             <Navbar />
+            <VoiceAssistant />
             <main className="main-content">
               <Routes>
                 {/* Public Routes */}

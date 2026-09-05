@@ -3,6 +3,8 @@ import { Droplets, Loader2, AlertCircle, Leaf } from 'lucide-react';
 import { toolsService } from '../services/toolsService';
 import { farmService } from '../services/farmService';
 import { useLanguage } from '../context/LanguageContext';
+import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
+import { useVoiceFill, IRRIGATION_FIELDS } from '../utils/voiceFormFill';
 import './Tools.css';
 
 const SOIL_TYPES      = ['clay', 'sandy', 'loam', 'silt', 'clay_loam', 'sandy_loam', 'black', 'red', 'laterite', 'alluvial'];
@@ -10,6 +12,7 @@ const IRRIGATION_METHODS = ['drip', 'sprinkler', 'furrow', 'flood', 'rainfed'];
 
 const IrrigationAdvisory = () => {
   const { t } = useLanguage();
+  const { speak } = useVoiceAssistant();
   const [farms, setFarms]             = useState([]);
   const [supportedCrops, setSupportedCrops] = useState([]);
   const [form, setForm] = useState({
@@ -22,6 +25,13 @@ const IrrigationAdvisory = () => {
   const [result, setResult]   = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
+
+  // ── Step 11d: Voice form fill ──
+  useVoiceFill(
+    IRRIGATION_FIELDS,
+    (field, value) => setForm(f => ({ ...f, [field]: value })),
+    speak
+  );
 
   useEffect(() => {
     farmService.getFarms()
@@ -55,6 +65,11 @@ const IrrigationAdvisory = () => {
       const data = await toolsService.getIrrigationAdvisory(payload);
       console.log('[Irrigation] response ←', data);
       setResult(data);
+      // ── Step 10e: Auto-speak water requirement ──
+      const netDaily = data?.water_requirement?.net_daily_et_mm;
+      if (netDaily != null) {
+        speak(`${t('irrigationReadyTitle')}. ${t('irrigationNetDaily')}: ${netDaily.toFixed(1)} mm.`);
+      }
     } catch (err) {
       console.error('[Irrigation] error:', err);
       setError(err?.response?.data?.detail || t('irrigationErrFetch'));

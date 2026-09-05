@@ -82,6 +82,51 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Speech Recognition (backend STT — bypasses browser Web Speech API issues) ──
+import speech_recognition as sr
+from pydub import AudioSegment
+import tempfile
+
+@app.post("/api/transcribe")
+async def transcribe_audio(audio: UploadFile = File(...), language: str = "en-IN"):
+    """
+    Receive audio from the browser (WebM/OGG from MediaRecorder),
+    convert to WAV, and transcribe with Google's free STT via Python.
+    Returns: { "text": "transcribed text" }
+    """
+    try:
+        audio_bytes = await audio.read()
+
+        # Convert WebM/OGG → WAV using pydub
+        with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as tmp_in:
+            tmp_in.write(audio_bytes)
+            tmp_in_path = tmp_in.name
+
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_out:
+            tmp_out_path = tmp_out.name
+
+        sound = AudioSegment.from_file(tmp_in_path)
+        sound = sound.set_frame_rate(16000).set_channels(1)
+        sound.export(tmp_out_path, format="wav")
+
+        recognizer = sr.Recognizer()
+        with sr.AudioFile(tmp_out_path) as source:
+            audio_data = recognizer.record(source)
+
+        # Use Google's free STT (no API key needed)
+        try:
+            text = recognizer.recognize_google(audio_data, language=language)
+            logger.info(f"[STT] Transcribed: {text!r}")
+            return {"text": text, "error": None}
+        except sr.UnknownValueError:
+            logger.warning("[STT] Speech not understood")
+            return {"text": "", "error": "no-speech"}
+        except sr.RequestError as e:
+            logger.error(f"[STT] Google STT request failed: {e}")
+            return {"text": "", "error": "network"}
+    except Exception as e:
+        logger.error(f"[STT] Transcription error: {e}")
+        return {"text": "", "error": str(e)}
 
 #dot-env Data here
 load_dotenv()
