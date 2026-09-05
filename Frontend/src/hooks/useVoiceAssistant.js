@@ -104,7 +104,7 @@ export function useVoiceAssistant() {
 
     if (intent?.type === 'navigate') {
       speak(tRef.current('voiceNavigatingTo') + ' ' + intent.label);
-      setTimeout(() => navigateRef.current(intent.route), 600);
+      setTimeout(() => navigateRef.current(intent.route), 300);
     } else if (intent?.type === 'form-fill') {
       window.dispatchEvent(new CustomEvent('voice-fill', {
         detail: { field: intent.field, value: intent.value, raw: text }

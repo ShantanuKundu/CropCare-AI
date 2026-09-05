@@ -35,6 +35,9 @@ const NAV_COMMANDS = {
     ['calendar',       '/tools/crop-calendar',        'Crop Calendar'],
     ['history',        '/history',                    'History'],
     ['soil',           '/history',                    'History'],
+    ['abhishek', '/', 'Home'],
+    ['shantanu', '/', 'Home'],
+    
   ],
 
   hi: [
