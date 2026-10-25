@@ -1,5 +1,6 @@
+from datetime import datetime
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List 
 
 class RegisterRequest(BaseModel):
     name: str
@@ -84,4 +85,38 @@ class FusionRequest(BaseModel):
     # Image branch: prediction_id from a prior /predict call.
     # The fusion endpoint will fetch the stored top-N probabilities for that prediction.
     # If omitted, the LATEST prediction for the current user is used automatically.
-    prediction_id:  Optional[int]   = None
+    prediction_id:  Optional[int]   = None
+
+class KhataEntryCreate(BaseModel):
+    farm_id: Optional[int] = None
+    title: str
+    transaction_type: str   # "expense" | "income"
+    category: str           # "Seeds", "Fertilizers", "Pesticides", "Labor", "Machinery", "Irrigation", "Crop Sale", "Other"
+    amount: float
+    crop: Optional[str] = None
+    date: Optional[datetime] = None
+    notes: Optional[str] = None
+
+class KhataEntryResponse(BaseModel):
+    id: int
+    user_id: int
+    farm_id: Optional[int]
+    title: str
+    transaction_type: str
+    category: str
+    amount: float
+    crop: Optional[str]
+    date: datetime
+    notes: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class KhataSummaryResponse(BaseModel):
+    total_income: float
+    total_expense: float
+    net_profit: float
+    expense_by_category: dict
+    income_by_category: dict
+    entries_count: int    

@@ -4,10 +4,14 @@ from fertilizer_engine import get_fertilizer_recommendation
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, SessionLocal
-from models import Base, User, Prediction, SoilData, Farm, CropRecommendation, FertilizerRecommendation, YieldPrediction
+from models import Base, User, Prediction, SoilData, Farm, CropRecommendation, FertilizerRecommendation, YieldPrediction, KisanKhata
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import  IntegrityError
-from schemas import RegisterRequest, LoginRequest, FarmCreate, FarmResponse, FertilizerRequest, YieldRequest
+from schemas import (
+    RegisterRequest, LoginRequest, FarmCreate, FarmResponse, 
+    FertilizerRequest, YieldRequest, SoilBranchRequest, FusionRequest,
+    KhataEntryCreate, KhataEntryResponse, KhataSummaryResponse
+)
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta 
@@ -1760,3 +1764,122 @@ async def fusion_analysis(
             status_code=500,
             detail=f"Fusion analysis failed: {str(e)}"
         )
+
+# ════════════════════════════════════════════════════════════════════
+#  KISAN KHATA (FARM EXPENSE & INCOME LEDGER)
+# ════════════════════════════════════════════════════════════════════
+
+@app.post("/khata/entry", response_model=KhataEntryResponse)
+def add_khata_entry(
+    entry: KhataEntryCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Logs a new farm expense or income transaction."""
+    tx_type = entry.transaction_type.lower().strip()
+    if tx_type not in ["expense", "income"]:
+        raise HTTPException(status_code=400, detail="transaction_type must be either 'expense' or 'income'")
+
+    if entry.amount <= 0:
+        raise HTTPException(status_code=400, detail="Amount must be greater than 0")
+
+    # If farm_id provided, verify ownership
+    if entry.farm_id:
+        farm = db.query(Farm).filter(Farm.id == entry.farm_id, Farm.user_id == current_user.id).first()
+        if not farm:
+            raise HTTPException(status_code=404, detail="Farm not found")
+
+    new_entry = KisanKhata(
+        user_id=current_user.id,
+        farm_id=entry.farm_id,
+        title=entry.title.strip(),
+        transaction_type=tx_type,
+        category=entry.category.strip(),
+        amount=round(entry.amount, 2),
+        crop=entry.crop.strip() if entry.crop else None,
+        date=entry.date if entry.date else datetime.utcnow(),
+        notes=entry.notes.strip() if entry.notes else None
+    )
+
+    db.add(new_entry)
+    db.commit()
+    db.refresh(new_entry)
+    return new_entry
+
+
+@app.get("/khata/entries", response_model=List[KhataEntryResponse])
+def get_khata_entries(
+    farm_id: Optional[int] = None,
+    crop: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Retrieves all transaction entries for the logged-in user with optional filters."""
+    query = db.query(KisanKhata).filter(KisanKhata.user_id == current_user.id)
+
+    if farm_id:
+        query = query.filter(KisanKhata.farm_id == farm_id)
+    if crop:
+        query = query.filter(KisanKhata.crop.ilike(f"%{crop}%"))
+
+    return query.order_by(KisanKhata.date.desc()).all()
+
+
+@app.get("/khata/summary", response_model=KhataSummaryResponse)
+def get_khata_summary(
+    farm_id: Optional[int] = None,
+    crop: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Aggregates total income, total expenses, net profit, and breakdown by category."""
+    query = db.query(KisanKhata).filter(KisanKhata.user_id == current_user.id)
+
+    if farm_id:
+        query = query.filter(KisanKhata.farm_id == farm_id)
+    if crop:
+        query = query.filter(KisanKhata.crop.ilike(f"%{crop}%"))
+
+    entries = query.all()
+
+    total_income = 0.0
+    total_expense = 0.0
+    expense_by_cat = {}
+    income_by_cat = {}
+
+    for item in entries:
+        if item.transaction_type == "income":
+            total_income += item.amount
+            income_by_cat[item.category] = round(income_by_cat.get(item.category, 0.0) + item.amount, 2)
+        else:
+            total_expense += item.amount
+            expense_by_cat[item.category] = round(expense_by_cat.get(item.category, 0.0) + item.amount, 2)
+
+    return {
+        "total_income": round(total_income, 2),
+        "total_expense": round(total_expense, 2),
+        "net_profit": round(total_income - total_expense, 2),
+        "expense_by_category": expense_by_cat,
+        "income_by_category": income_by_cat,
+        "entries_count": len(entries)
+    }
+
+
+@app.delete("/khata/{entry_id}")
+def delete_khata_entry(
+    entry_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Deletes an entry belonging to the logged-in farmer."""
+    entry = db.query(KisanKhata).filter(
+        KisanKhata.id == entry_id,
+        KisanKhata.user_id == current_user.id
+    ).first()
+
+    if not entry:
+        raise HTTPException(status_code=404, detail="Khata entry not found")
+
+    db.delete(entry)
+    db.commit()
+    return {"message": "Transaction deleted successfully"}

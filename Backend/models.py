@@ -104,3 +104,20 @@ class YieldPrediction(Base):
     ph              = Column(Float,  nullable=True)
     result          = Column(String, nullable=False)   # JSON string
     created_at      = Column(DateTime, default=datetime.utcnow)
+
+class KisanKhata(Base):
+    __tablename__ = "kisan_khata"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    farm_id = Column(Integer, ForeignKey("farms.id"), nullable=True)
+
+    title = Column(String, nullable=False)               # e.g., "Urea purchase", "Wheat harvest sale"
+    transaction_type = Column(String, nullable=False)    # "expense" | "income"
+    category = Column(String, nullable=False)            # "Seeds", "Fertilizers", "Labor", "Machinery", "Crop Sale", "Other"
+    amount = Column(Float, nullable=False)
+    crop = Column(String, nullable=True)                 # Optional crop tag (e.g., "Wheat", "Tomato")
+    date = Column(DateTime, default=datetime.utcnow)
+    notes = Column(String, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)    
