@@ -1,254 +1,236 @@
 /**
- * useVoiceAssistant.js
+ * useVoiceAssistant.js — Fast, Reliable Browser Voice Assistant
  *
- * Records audio with MediaRecorder (getUserMedia) → sends to FastAPI /api/transcribe
- * → Python SpeechRecognition transcribes it → intent matching → navigation.
+ * Uses native Web Speech API (window.SpeechRecognition || window.webkitSpeechRecognition)
+ * for instant zero-latency speech-to-text supporting 11 Indian languages.
+ * Uses Web Speech Synthesis (window.speechSynthesis) for spoken feedback.
  *
- * This bypasses Chrome's Web Speech API entirely, which was failing due to
- * Windows audio enhancements suppressing the mic signal before Chrome sees it.
- * MediaRecorder gets the raw audio directly from the device.
+ * Resolves spoken commands to application routes (e.g., "disease detection",
+ * "tomato disease", "mandi prices", "fertilizer recommendation").
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { resolveIntent } from '../utils/voiceCommands';
-import { useEffect } from 'react';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 const LANG_TO_BCP47 = {
-  en: 'en-IN', hi: 'hi-IN', bn: 'bn-IN', mr: 'mr-IN',
-  te: 'te-IN', or: 'or-IN', ta: 'ta-IN', gu: 'gu-IN',
-  kn: 'kn-IN', ml: 'ml-IN', pa: 'pa-IN',
+  en: 'en-IN',
+  hi: 'hi-IN',
+  bn: 'bn-IN',
+  mr: 'mr-IN',
+  te: 'te-IN',
+  or: 'or-IN',
+  ta: 'ta-IN',
+  gu: 'gu-IN',
+  kn: 'kn-IN',
+  ml: 'ml-IN',
+  pa: 'pa-IN',
 };
+
+// Check if browser supports Web Speech API
+const SpeechRecognition =
+  typeof window !== 'undefined'
+    ? window.SpeechRecognition || window.webkitSpeechRecognition
+    : null;
 
 export function useVoiceAssistant() {
   const { language, t } = useLanguage();
   const navigate = useNavigate();
 
-  const [isListening,  setIsListening]  = useState(false);
-  const [isSpeaking,   setIsSpeaking]   = useState(false);
-  const [transcript,   setTranscript]   = useState('');
-  const [voiceError,   setVoiceError]   = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false); // true while backend transcribes
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [voiceError, setVoiceError] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef   = useRef([]);
-  const languageRef      = useRef(language);
-  const navigateRef      = useRef(navigate);
-  const tRef             = useRef(t);
-  const workerRef = useRef(null);
-  const [modelReady, setModelReady] = useState(false);
-  const [modelLoadProgress, setModelLoadProgress] = useState(0);
-  const [isInitializing, setIsInitializing] = useState(false);
+  const recognitionRef = useRef(null);
+  const languageRef = useRef(language);
+  const navigateRef = useRef(navigate);
+  const tRef = useRef(t);
+  const finalTranscriptRef = useRef('');
 
-  useEffect(() => { languageRef.current = language; }, [language]);
-  useEffect(() => { navigateRef.current = navigate; }, [navigate]);
-  useEffect(() => { tRef.current = t; }, [t]);
   useEffect(() => {
-  workerRef.current = new Worker(
-    new URL('../workers/stt.worker.js', import.meta.url),
-    { type: 'module' }
-  );
+    languageRef.current = language;
+  }, [language]);
+  useEffect(() => {
+    navigateRef.current = navigate;
+  }, [navigate]);
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
 
-  workerRef.current.postMessage({ type: 'load' });
-
-  workerRef.current.onmessage = (e) => {
-  console.log('[Whisper]', e.data);
-
-  const { type, text, progress } = e.data;
-
-  if (type === 'ready') {
-    setModelReady(true);
-  }
-
-  if (type === 'loading') {
-    setModelLoadProgress(progress || 0);
-  }
-
-  if (type === 'result') {
-    handleTranscript(text);
-  }
-
-  if (type === 'error') {
-    console.error('[Whisper Error]', e.data.message);
-  }
-};
-
-  return () => workerRef.current?.terminate();
-}, []);
-
-  // ── TTS ─────────────────────────────────────────────────────────────────────
+  // ── Text-to-Speech (TTS) ──────────────────────────────────────────────────
   const speak = useCallback((text) => {
-    if (!text || !window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utt   = new SpeechSynthesisUtterance(text);
-    utt.lang    = LANG_TO_BCP47[languageRef.current] ?? 'en-IN';
-    utt.rate    = 0.9;
-    utt.pitch   = 1;
-    utt.onstart = () => setIsSpeaking(true);
-    utt.onend   = () => setIsSpeaking(false);
-    utt.onerror = () => setIsSpeaking(false);
-    window.speechSynthesis.speak(utt);
+    if (!text || typeof window === 'undefined' || !window.speechSynthesis) return;
+
+    try {
+      window.speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(text);
+      const bcp47 = LANG_TO_BCP47[languageRef.current] ?? 'en-IN';
+      utt.lang = bcp47;
+      utt.rate = 0.95;
+      utt.pitch = 1.0;
+
+      utt.onstart = () => setIsSpeaking(true);
+      utt.onend = () => setIsSpeaking(false);
+      utt.onerror = () => setIsSpeaking(false);
+
+      window.speechSynthesis.speak(utt);
+    } catch (err) {
+      console.warn('[Voice TTS] speech error:', err);
+      setIsSpeaking(false);
+    }
   }, []);
 
-  // ── Intent resolver ─────────────────────────────────────────────────────────
-  const handleTranscript = useCallback((text) => {
-    if (!text) return;
-    console.log('[Voice] 📝 Heard:', JSON.stringify(text));
-    setTranscript(text);
+  // ── Process Transcribed Intent ────────────────────────────────────────────
+  const handleTranscript = useCallback(
+    (text) => {
+      if (!text || !text.trim()) return;
+      const cleanText = text.trim();
+      console.log('[Voice] 📝 Heard:', JSON.stringify(cleanText));
+      setTranscript(cleanText);
 
-    const intent = resolveIntent(text, languageRef.current);
-    console.log('[Voice] 🧠 Intent:', intent);
+      const intent = resolveIntent(cleanText, languageRef.current);
+      console.log('[Voice] 🧠 Intent resolved:', intent);
 
-    if (intent?.type === 'navigate') {
-      speak(tRef.current('voiceNavigatingTo') + ' ' + intent.label);
-      setTimeout(() => navigateRef.current(intent.route), 300);
-    } else if (intent?.type === 'form-fill') {
-      window.dispatchEvent(new CustomEvent('voice-fill', {
-        detail: { field: intent.field, value: intent.value, raw: text }
-      }));
-      speak(tRef.current('voiceFieldFilled') + ': ' + intent.value);
-    } else {
-      speak(tRef.current('voiceNotUnderstood'));
-    }
-  }, [speak]);
+      if (intent?.type === 'navigate') {
+        const confirmPrefix = tRef.current('voiceNavigatingTo') || 'Opening';
+        speak(`${confirmPrefix} ${intent.label}`);
+        setTimeout(() => {
+          navigateRef.current(intent.route);
+        }, 350);
+      } else if (intent?.type === 'form-fill') {
+        window.dispatchEvent(
+          new CustomEvent('voice-fill', {
+            detail: { field: intent.field, value: intent.value, raw: cleanText },
+          })
+        );
+        speak(`${tRef.current('voiceFieldFilled') || 'Filled'}: ${intent.value}`);
+      } else {
+        const notUnderstood =
+          tRef.current('voiceNotUnderstood') ||
+          "Sorry, I didn't catch that. Please try saying 'Disease Detection' or 'Mandi'.";
+        speak(notUnderstood);
+      }
+    },
+    [speak]
+  );
 
- 
-
-  // ── Start recording ─────────────────────────────────────────────────────────
-  const startListening = useCallback(async () => {
-    if (isListening || isProcessing) return;
+  // ── Start Listening ───────────────────────────────────────────────────────
+  const startListening = useCallback(() => {
+    if (isListening) return;
 
     setTranscript('');
     setVoiceError(null);
+    finalTranscriptRef.current = '';
 
-    const bcp47 = LANG_TO_BCP47[languageRef.current] ?? 'en-IN';
-
-    let stream;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          deviceId: {
-            exact: '61a30323444520e77d0c2f2413dc89355b007c57b5afa63f3b71b4d206a7489b'
-            },
-          echoCancellation: true,   // raw audio — bypass Windows enhancements
-          noiseSuppression: true,
-          autoGainControl:  true,
-          sampleRate:       16000,
-        }
-      });
-
-      console.log(
-    '[MIC]',
-    stream.getAudioTracks()[0].label
-  );
-    } 
-    catch (err) {
-      console.error('[Voice] getUserMedia failed:', err.name);
-      setVoiceError(err.name === 'NotAllowedError' ? 'not-allowed' : 'audio-capture');
+    if (!SpeechRecognition) {
+      console.warn('[Voice] Web Speech API not supported in this browser.');
+      setVoiceError('unsupported');
       setTimeout(() => setVoiceError(null), 6000);
       return;
     }
 
-    const mr = new MediaRecorder(stream);
-    console.log('[MIC SETTINGS]', stream.getAudioTracks()[0].getSettings());  
-    mediaRecorderRef.current = mr;
-    audioChunksRef.current   = [];
-
-    mr.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
-
-    mr.onstop = () => {
-      stream.getTracks().forEach(t => t.stop());
-      const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-      console.log('[Voice] 🎙️ Recording stopped. Blob size:', blob.size, 'bytes');
-      (async () => {
-        const arrayBuffer = await blob.arrayBuffer();
-
-        const audioContext = new AudioContext();
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-       
-      const source = audioBuffer.getChannelData(0);  
-      
-      let peak = 0;
-
-      for (let i = 0; i < source.length; i++) {
-        const v = Math.abs(source[i]);
-        if (v > peak) peak = v;
+    try {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch (_) {}
       }
 
-      console.log('[SOURCE PEAK]', peak);
-      
-      const targetRate = 16000;
-      const ratio = audioBuffer.sampleRate / targetRate;
-      const newLength = Math.round(audioBuffer.length / ratio);
+      const recognition = new SpeechRecognition();
+      recognition.lang = LANG_TO_BCP47[languageRef.current] ?? 'en-IN';
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
 
-      const audio = new Float32Array(newLength);
+      recognition.onstart = () => {
+        setIsListening(true);
+        setIsProcessing(false);
+        console.log('[Voice] 🔴 Listening started in language:', recognition.lang);
+      };
 
-      for (let i = 0; i < newLength; i++) {
-        audio[i] = source[Math.floor(i * ratio)];
-      }
+      recognition.onresult = (event) => {
+        let interim = '';
+        let final = '';
 
-          let audioPeak = 0;
-
-          for (let i = 0; i < audio.length; i++) {
-            const v = Math.abs(audio[i]);
-            if (v > audioPeak) audioPeak = v;
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const piece = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            final += piece;
+          } else {
+            interim += piece;
           }
+        }
 
-          console.log(
-            '[Audio Stats]',
-            'peak=', audioPeak,
-            'len=', audio.length
-          );
+        const spokenNow = (final || interim).trim();
+        if (spokenNow) {
+          setTranscript(spokenNow);
+        }
+        if (final) {
+          finalTranscriptRef.current = final;
+        }
+      };
 
-        
+      recognition.onerror = (event) => {
+        console.warn('[Voice] recognition error:', event.error);
+        if (event.error === 'no-speech') {
+          setVoiceError('no-speech');
+        } else if (event.error === 'not-allowed') {
+          setVoiceError('not-allowed');
+        } else if (event.error === 'audio-capture') {
+          setVoiceError('audio-capture');
+        } else if (event.error === 'network') {
+          setVoiceError('network');
+        } else {
+          setVoiceError('unknown');
+        }
+        setIsListening(false);
+        setTimeout(() => setVoiceError(null), 5000);
+      };
 
-        console.log('[RESAMPLED LEN]', audio.length);
-        workerRef.current.postMessage({
-          type: 'transcribe',
-          audio,
-          language: bcp47,
-        });
-      })(); 
+      recognition.onend = () => {
+        setIsListening(false);
+        const textToProcess = finalTranscriptRef.current || transcript;
+        if (textToProcess) {
+          handleTranscript(textToProcess);
+        }
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error('[Voice] Failed to start recognition:', err);
+      setVoiceError('unknown');
       setIsListening(false);
-    };
+      setTimeout(() => setVoiceError(null), 5000);
+    }
+  }, [isListening, transcript, handleTranscript]);
 
-    mr.start();
-    setIsListening(true);
-    console.log('[Voice] 🔴 Recording started...');
-
-    // Auto-stop after 6 seconds
-    setTimeout(() => {
-      if (mr.state === 'recording') {
-        console.log('[Voice] ⏱️ Auto-stopping after 6s');
-        mr.stop();
-      }
-    }, 6000);
-  }, [isListening, isProcessing]);
-
-  // ── Stop recording early ────────────────────────────────────────────────────
+  // ── Stop Listening ────────────────────────────────────────────────────────
   const stopListening = useCallback(() => {
-    if (mediaRecorderRef.current?.state === 'recording') {
-      mediaRecorderRef.current.stop();
+    if (recognitionRef.current && isListening) {
+      try {
+        recognitionRef.current.stop();
+      } catch (_) {}
     }
     setIsListening(false);
-  }, []);
+  }, [isListening]);
 
   return {
     startListening,
     stopListening,
     speak,
+    handleTranscript,
     isListening,
     isSpeaking,
-    isProcessing,  // true while backend is transcribing
+    isProcessing,
     transcript,
     voiceError,
-    // Kept so VoiceAssistant.jsx doesn't break
-    modelReady:        true,
-    modelLoadProgress: 0,
-    isInitializing:    false,
-    isSupported:       !!navigator.mediaDevices?.getUserMedia,
+    modelReady: true,
+    modelLoadProgress: 100,
+    isInitializing: false,
+    isSupported: !!SpeechRecognition,
   };
 }

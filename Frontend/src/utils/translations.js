@@ -47,6 +47,21 @@ export const translations = {
       '🌿 Your plant appears healthy! No disease detected. Keep monitoring regularly.',
     pleaseSelectImage: 'Please select an image.',
     predictionFailed: 'Prediction failed. Please try again.',
+    trySampleExamples: 'Try with Sample Leaves',
+    sampleExampleHint: 'Click an example leaf to test disease detection instantly',
+    selectedSample: 'Selected Example',
+    loadThisSample: 'Load Sample',
+    voiceAssistantReady: 'Voice Assistant Ready',
+    voiceTapToSpeak: 'Tap to speak',
+    voiceListening: 'Listening...',
+    voiceProcessing: 'Processing voice...',
+    voiceNavigatingTo: 'Opening',
+    voiceFieldFilled: 'Filled field',
+    voiceNotUnderstood: "Sorry, I didn't catch that. Please try again.",
+    voiceHelp: 'Voice Commands Help',
+    voiceOfflineReady: 'Voice Assistant Ready',
+    voiceModelLoading: 'Voice ready',
+
 
     // ── Dashboard / Farms ────────────────────────────────
     analyticsDashboard: 'Analytics Dashboard',
@@ -374,6 +389,21 @@ export const translations = {
       '🌿 आपका पौधा स्वस्थ दिखता है! कोई बीमारी नहीं मिली। नियमित रूप से निगरानी जारी रखें।',
     pleaseSelectImage: 'कृपया एक छवि चुनें।',
     predictionFailed: 'भविष्यवाणी विफल हुई। कृपया पुनः प्रयास करें।',
+    trySampleExamples: 'नमूना पत्तियों के साथ आज़माएं',
+    sampleExampleHint: 'तुरंत रोग पहचान की जांच के लिए किसी भी नमूने पर क्लिक करें',
+    selectedSample: 'चयनित उदाहरण',
+    loadThisSample: 'नमूना लोड करें',
+    voiceAssistantReady: 'आवाज सहायक तैयार है',
+    voiceTapToSpeak: 'बोलने के लिए दबाएं',
+    voiceListening: 'सुन रहा हूँ...',
+    voiceProcessing: 'आवाज पहचानी जा रही है...',
+    voiceNavigatingTo: 'खोल रहा हूँ',
+    voiceFieldFilled: 'भर दिया गया',
+    voiceNotUnderstood: 'मुझे समझ नहीं आया, कृपया फिर से बोलें।',
+    voiceHelp: 'आवाज आदेश सहायता',
+    voiceOfflineReady: 'आवाज सहायक तैयार है',
+    voiceModelLoading: 'तैयार हो रहा है',
+
 
     // ── Dashboard / Farms ────────────────────────────────
     analyticsDashboard: 'विश्लेषण डैशबोर्ड',
