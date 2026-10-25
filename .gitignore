@@ -6,10 +6,10 @@
 *.docx
 
 # Large datasets - store on Kaggle/Google Drive instead
-Datasets/
+#Datasets/
 
 # Jupyter notebooks & Research (optional - keep if needed)
-Jupyter Codes/
+#Jupyter Codes/
 Research Papers/
 
 # Sample images at root level
