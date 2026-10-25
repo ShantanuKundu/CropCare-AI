@@ -37,6 +37,7 @@ const Dashboard = () => {
   const [useCoords, setUseCoords] = useState(false);
 
   useEffect(() => {
+    console.log('use effect called');
     fetchData();
   }, []);
 
@@ -47,7 +48,6 @@ const Dashboard = () => {
         soilService.getSoilHistory(),
         farmService.getFarms().catch(() => []),
       ]);
-
       setPredictions(Array.isArray(predData) ? predData : []);
       setSoilData(Array.isArray(soilDataRes) ? soilDataRes : []);
       setFarms(Array.isArray(farmsRes) ? farmsRes : []);
@@ -57,7 +57,8 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
-
+  // console.log(predictions,soilData,farms)
+  
   const handleFarmFormChange = (e) => {
     setFarmForm({ ...farmForm, [e.target.name]: e.target.value });
   };

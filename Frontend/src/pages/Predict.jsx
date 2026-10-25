@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { predictionService } from '../services/predictionService';
 import { useLanguage } from '../context/LanguageContext';
 import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
@@ -16,6 +16,7 @@ function severityClass(severity = '') {
 const Predict = () => {
   const { t } = useLanguage();
   const { speak } = useVoiceAssistant();
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [result, setResult] = useState(null);
@@ -43,21 +44,30 @@ const Predict = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedFile) { setError(t('pleaseSelectImage')); return; }
+    if (!selectedFile) {
+      setError(t('pleaseSelectImage'));
+      return;
+    }
     setLoading(true);
     setError('');
     try {
       const data = await predictionService.predictDisease(selectedFile);
       setResult(data);
+
       // ── Step 10a: Auto-speak result ──
       const isHealthyResult = data?.disease?.toLowerCase().includes('healthy');
       const conf = data?.confidence ? `${(data.confidence * 100).toFixed(0)}%` : '';
       if (isHealthyResult) {
         speak(t('healthyMessage'));
       } else if (data?.disease) {
-        speak(`${data.disease}. ${t('confidence')}: ${conf}.${data.severity ? ` ${t('severity')}: ${data.severity}.` : ''}`);
+        speak(
+          `${data.disease}. ${t('confidence')}: ${conf}.${
+            data.severity ? ` ${t('severity')}: ${data.severity}.` : ''
+          }`
+        );
       }
-      // Cache full result (severity/cause/symptoms/treatment) in sessionStorage
+
+      // Cache full result in sessionStorage
       try {
         const cache = JSON.parse(sessionStorage.getItem('predictionDetailsCache') || '{}');
         cache[data.prediction_id] = {
@@ -67,7 +77,7 @@ const Predict = () => {
           treatment: data.treatment,
         };
         sessionStorage.setItem('predictionDetailsCache', JSON.stringify(cache));
-      } catch (_) { /* sessionStorage not critical */ }
+      } catch (_) {}
     } catch (err) {
       setError(err.response?.data?.detail || t('predictionFailed'));
     } finally {
@@ -80,7 +90,6 @@ const Predict = () => {
     setPreview(null);
     setResult(null);
     setError('');
-    // Reset the file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -90,8 +99,13 @@ const Predict = () => {
 
   return (
     <div className="page-container">
-      <h1>{t('diseaseDetectionTitle')}</h1>
-      <p className="page-subtitle">{t('diseaseDetectionSubtitle')}</p>
+      <div className="predict-header-row">
+        <div>
+          <h1>{t('diseaseDetectionTitle')}</h1>
+          <p className="page-subtitle">{t('diseaseDetectionSubtitle')}</p>
+        </div>
+      </div>
+
 
       <div className="content-grid">
         {/* Upload Section */}
@@ -108,23 +122,26 @@ const Predict = () => {
               />
               <label htmlFor="file-upload" className="file-label">
                 {preview ? (
-                  <img src={preview} alt="Preview" className="image-preview" />
+                  <div className="preview-container">
+                    <img src={preview} alt="Preview" className="image-preview" />
+                  </div>
                 ) : (
                   <div className="upload-placeholder">
                     <span className="upload-icon">📷</span>
                     <p>{t('clickToUpload')}</p>
                     <span className="upload-hint">{t('jpgPngSupported')}</span>
-                    <span className="upload-hint" style={{ color: 'rgba(16,185,129,0.85)', marginTop: '0.25rem' }}>
-                      Please upload a clear crop leaf image.
+                    <span
+                      className="upload-hint"
+                      style={{ color: 'rgba(16,185,129,0.85)', marginTop: '0.25rem' }}
+                    >
+                      Please upload a clear crop leaf image or pick an example above.
                     </span>
                   </div>
                 )}
               </label>
             </div>
 
-            {selectedFile && (
-              <div className="file-name">{selectedFile.name}</div>
-            )}
+            {selectedFile && <div className="file-name">{selectedFile.name}</div>}
 
             {error && <div className="error-message">{error}</div>}
 
@@ -135,7 +152,10 @@ const Predict = () => {
               id="analyze-btn"
             >
               {loading ? (
-                <><span className="btn-spinner" />{t('analyzing')}</>
+                <>
+                  <span className="btn-spinner" />
+                  {t('analyzing')}
+                </>
               ) : (
                 t('analyzeImage')
               )}
@@ -148,7 +168,7 @@ const Predict = () => {
           <div className="result-section">
             <h2>{t('diagnosisResult')}</h2>
 
-            {/* Leaf image preview from Cloudinary (image_url) */}
+            {/* Leaf image preview */}
             {result.image_url && (
               <div className="result-image-wrapper">
                 <img src={result.image_url} alt="Analyzed leaf" className="result-leaf-img" />
@@ -206,9 +226,7 @@ const Predict = () => {
               </div>
             )}
 
-            {isHealthy && (
-              <div className="healthy-msg">{t('healthyMessage')}</div>
-            )}
+            {isHealthy && <div className="healthy-msg">{t('healthyMessage')}</div>}
 
             {/* Action buttons */}
             <div className="result-actions">
