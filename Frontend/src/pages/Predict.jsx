@@ -1,9 +1,8 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState, useRef } from 'react';
 import { predictionService } from '../services/predictionService';
 import { useLanguage } from '../context/LanguageContext';
 import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
-import { RefreshCw, CheckCircle2, Sparkles } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import './Predict.css';
 
 // Severity → colour class
@@ -14,91 +13,16 @@ function severityClass(severity = '') {
   return 'sev-low';
 }
 
-const SAMPLE_LEAF_EXAMPLES = [
-  {
-    key: 'tomato',
-    crop: 'Tomato',
-    disease: 'Early Blight',
-    filename: 'tomato_early_blight.jpg',
-    path: '/sample-leaves/tomato_early_blight.jpg',
-    badge: 'Fungal Infection',
-    icon: '🍅',
-    desc: 'Dark brown concentric target spots with yellow halo',
-  },
-  {
-    key: 'potato',
-    crop: 'Potato',
-    disease: 'Late Blight',
-    filename: 'potato_late_blight.jpg',
-    path: '/sample-leaves/potato_late_blight.jpg',
-    badge: 'Oomycete Lesion',
-    icon: '🥔',
-    desc: 'Water-soaked necrotic patches with pale borders',
-  },
-  {
-    key: 'corn',
-    crop: 'Corn (Maize)',
-    disease: 'Common Rust',
-    filename: 'corn_common_rust.jpg',
-    path: '/sample-leaves/corn_common_rust.jpg',
-    badge: 'Fungal Pustules',
-    icon: '🌽',
-    desc: 'Cinnamon brown powdery rust spots on leaf surface',
-  },
-  {
-    key: 'pepper',
-    crop: 'Bell Pepper',
-    disease: 'Healthy Leaf',
-    filename: 'pepper_healthy.jpg',
-    path: '/sample-leaves/pepper_healthy.jpg',
-    badge: 'Healthy Plant',
-    icon: '🫑',
-    desc: 'Vibrant green glossy foliage without lesions',
-  },
-];
-
 const Predict = () => {
   const { t } = useLanguage();
   const { speak } = useVoiceAssistant();
-  const [searchParams] = useSearchParams();
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [activeExample, setActiveExample] = useState(null);
   const fileInputRef = useRef(null);
-
-  // Load a sample leaf example into the form state
-  const loadExample = useCallback(async (exampleKey) => {
-    const example = SAMPLE_LEAF_EXAMPLES.find(
-      (ex) => ex.key.toLowerCase() === exampleKey.toLowerCase()
-    );
-    if (!example) return;
-
-    setActiveExample(example.key);
-    setError('');
-    setResult(null);
-
-    try {
-      const res = await fetch(example.path);
-      const blob = await res.blob();
-      const file = new File([blob], example.filename, { type: 'image/jpeg' });
-      setSelectedFile(file);
-      setPreview(example.path);
-    } catch (err) {
-      console.error('[Predict] Failed to load sample image:', err);
-    }
-  }, []);
-
-  // Listen to URL search parameter `?example=tomato` from Voice Assistant or links
-  useEffect(() => {
-    const exampleParam = searchParams.get('example');
-    if (exampleParam) {
-      loadExample(exampleParam);
-    }
-  }, [searchParams, loadExample]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -115,7 +39,6 @@ const Predict = () => {
       setPreview(URL.createObjectURL(file));
       setResult(null);
       setError('');
-      setActiveExample(null);
     }
   };
 
@@ -167,7 +90,6 @@ const Predict = () => {
     setPreview(null);
     setResult(null);
     setError('');
-    setActiveExample(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -184,53 +106,6 @@ const Predict = () => {
         </div>
       </div>
 
-      {/* ── Interactive Examples Showcase ── */}
-      <div className="sample-examples-card">
-        <div className="sample-examples-header">
-          <div className="sample-title-group">
-            <Sparkles size={18} className="sample-sparkle-icon" />
-            <h3>{t('trySampleExamples') || 'Try with Sample Leaves'}</h3>
-          </div>
-          <span className="sample-hint">
-            {t('sampleExampleHint') || 'Click an example leaf to test disease detection instantly'}
-          </span>
-        </div>
-
-        <div className="sample-grid">
-          {SAMPLE_LEAF_EXAMPLES.map((ex) => {
-            const isSelected = activeExample === ex.key;
-            return (
-              <div
-                key={ex.key}
-                className={`sample-item-card ${isSelected ? 'sample-item-active' : ''}`}
-                onClick={() => loadExample(ex.key)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') loadExample(ex.key);
-                }}
-              >
-                <div className="sample-thumb-wrapper">
-                  <img src={ex.path} alt={ex.crop} className="sample-thumb" />
-                  {isSelected && (
-                    <div className="sample-active-badge">
-                      <CheckCircle2 size={16} />
-                    </div>
-                  )}
-                </div>
-                <div className="sample-meta">
-                  <div className="sample-crop-name">
-                    <span className="sample-icon">{ex.icon}</span>
-                    <strong>{ex.crop}</strong>
-                  </div>
-                  <div className="sample-disease-label">{ex.disease}</div>
-                  <span className={`sample-badge sample-badge-${ex.key}`}>{ex.badge}</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
 
       <div className="content-grid">
         {/* Upload Section */}
@@ -249,12 +124,6 @@ const Predict = () => {
                 {preview ? (
                   <div className="preview-container">
                     <img src={preview} alt="Preview" className="image-preview" />
-                    {activeExample && (
-                      <div className="active-example-indicator">
-                        ✨ Example: {SAMPLE_LEAF_EXAMPLES.find((e) => e.key === activeExample)?.crop} -{' '}
-                        {SAMPLE_LEAF_EXAMPLES.find((e) => e.key === activeExample)?.disease}
-                      </div>
-                    )}
                   </div>
                 ) : (
                   <div className="upload-placeholder">
