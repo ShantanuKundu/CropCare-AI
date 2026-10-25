@@ -24,6 +24,7 @@ Thumbs.db
 # Git
 .gitkeep
 
-
 *.txt
 *.md
+
+!README.md
