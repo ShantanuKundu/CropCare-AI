@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
-import { CalendarDays, Loader2, AlertCircle, Search } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { CalendarDays, Loader2, AlertCircle, Search, Sprout, Clock, ChevronRight } from 'lucide-react';
 import { toolsService } from '../services/toolsService';
 import { useLanguage } from '../context/LanguageContext';
 import './Tools.css';
+import './CropCalendar.css';
 
 const INDIAN_STATES = [
   'Andhra Pradesh','Assam','Bihar','Chhattisgarh','Gujarat','Haryana',
@@ -12,37 +13,280 @@ const INDIAN_STATES = [
   'Uttar Pradesh','Uttarakhand','West Bengal',
 ];
 
-// Maps backend status keys → CSS class + human label + icon
-const STATUS_MAP = {
-  open_now:      { cls: 'cal-open-now',      icon: '🟢', label: 'SOW NOW' },
-  closing_soon:  { cls: 'cal-closing-soon',  icon: '🟡', label: 'WINDOW CLOSING' },
-  upcoming:      { cls: 'cal-upcoming',       icon: '🔵', label: 'Coming Up' },
-  just_closed:   { cls: 'cal-just-closed',   icon: '🔴', label: 'Window Closed' },
-  off_season:    { cls: 'cal-off-season',    icon: '⚪', label: 'Off-season' },
+const SEASONS = ['All', 'Kharif', 'Rabi', 'Zaid'];
+
+const STATUS_META = {
+  open_now:     { label: 'SOW NOW',        icon: '🟢', color: '#10b981', bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.4)' },
+  closing_soon: { label: 'WINDOW CLOSING', icon: '🟡', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)',  border: 'rgba(245,158,11,0.35)' },
+  upcoming:     { label: 'Coming Up',      icon: '🔵', color: '#60a5fa', bg: 'rgba(96,165,250,0.12)',  border: 'rgba(96,165,250,0.3)'  },
+  just_closed:  { label: 'Window Closed',  icon: '🔴', color: '#f87171', bg: 'rgba(248,113,113,0.1)',  border: 'rgba(248,113,113,0.25)' },
+  off_season:   { label: 'Off-season',     icon: '⚪', color: 'rgba(255,255,255,0.35)', bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.1)' },
 };
 
-function getStatus(statusKey = '') {
-  return STATUS_MAP[statusKey] || STATUS_MAP.off_season;
+// ── Growth Stage Definitions ─────────────────────────────────────────
+const STAGES = [
+  {
+    pct: [0, 25], label: 'Germination / Seedling', icon: '🌱', color: '#34d399',
+    activities: [
+      'Ensure uniform seed germination — check for gaps and replant if needed.',
+      'Light irrigation every 2–3 days; avoid waterlogging.',
+      'Apply pre-emergent herbicide within 3 days of sowing.',
+      'Monitor for damping-off fungal disease in seedlings.',
+    ],
+  },
+  {
+    pct: [25, 55], label: 'Vegetative Growth', icon: '🌿', color: '#10b981',
+    activities: [
+      'First weeding: remove weeds before they compete for nutrients.',
+      'Top-dress nitrogen (Urea) — split application at this stage.',
+      'Apply systemic insecticide if early pest damage is observed.',
+      'Irrigate based on soil moisture; avoid drought stress.',
+    ],
+  },
+  {
+    pct: [55, 80], label: 'Flowering / Grain Filling', icon: '🌾', color: '#f59e0b',
+    activities: [
+      '⚠️ CRITICAL STAGE — no water stress during flowering.',
+      'Avoid spraying pesticides during active pollination hours.',
+      'Apply potassium (MOP) fertiliser for grain/fruit filling.',
+      'Scout for pod borers, fruit flies, or ear head pests.',
+    ],
+  },
+  {
+    pct: [80, 100], label: 'Maturity / Harvest Ready', icon: '🏆', color: '#a78bfa',
+    activities: [
+      'Stop irrigation 10–14 days before harvest (pre-harvest water cutoff).',
+      'Check grain moisture content — harvest at 14–18% moisture.',
+      'Prepare storage / market transport arrangements.',
+      'Plan post-harvest residue management (straw, husk).',
+    ],
+  },
+];
+
+function getStageForDAS(das, totalDays) {
+  const pct = (das / totalDays) * 100;
+  return STAGES.find(s => pct >= s.pct[0] && pct < s.pct[1]) || STAGES[STAGES.length - 1];
 }
 
+// ── DAS Tracker Component ─────────────────────────────────────────────
+const DASTracker = ({ cropName, totalDays }) => {
+  const [sowDate, setSowDate] = useState('');
+  const [das, setDas]         = useState(null);
+
+  const handleDateChange = (e) => {
+    const d = e.target.value;
+    setSowDate(d);
+    if (d) {
+      const diff = Math.floor((Date.now() - new Date(d).getTime()) / (1000 * 60 * 60 * 24));
+      setDas(diff < 0 ? 0 : diff);
+    } else {
+      setDas(null);
+    }
+  };
+
+  const effectiveTotalDays = totalDays || 120;
+  const progressPct  = das !== null ? Math.min(100, (das / effectiveTotalDays) * 100) : 0;
+  const currentStage = das !== null ? getStageForDAS(das, effectiveTotalDays) : null;
+  const isComplete   = das !== null && das >= effectiveTotalDays;
+
+  return (
+    <div className="das-tracker">
+      <div className="das-tracker-header">
+        <span className="das-tracker-title"><Clock size={16} /> DAS Milestone Tracker</span>
+        {cropName && <span className="das-crop-tag">{cropName}</span>}
+      </div>
+
+      {/* Date picker */}
+      <div className="das-date-row">
+        <label className="das-date-label">📅 Sowing Date</label>
+        <input
+          type="date"
+          className="das-date-input"
+          value={sowDate}
+          max={new Date().toISOString().split('T')[0]}
+          onChange={handleDateChange}
+          id="das-sowing-date"
+        />
+        {das !== null && (
+          <span className="das-count-badge">{das} DAS</span>
+        )}
+      </div>
+
+      {das !== null && (
+        <>
+          {/* Progress Bar */}
+          <div className="das-progress-wrap">
+            {/* Stage segments */}
+            <div className="das-stage-bar">
+              {STAGES.map((s, i) => (
+                <div
+                  key={i}
+                  className="das-stage-segment"
+                  style={{
+                    width: `${s.pct[1] - s.pct[0]}%`,
+                    background: progressPct > s.pct[0] ? s.color : 'rgba(255,255,255,0.07)',
+                    opacity: currentStage === s ? 1 : 0.5,
+                    transition: 'background 0.6s ease, opacity 0.3s ease',
+                  }}
+                  title={`${s.icon} ${s.label} (${s.pct[0]}%–${s.pct[1]}%)`}
+                />
+              ))}
+              {/* Needle */}
+              <div
+                className="das-needle"
+                style={{ left: `${progressPct}%` }}
+              />
+            </div>
+
+            {/* Stage Labels below bar */}
+            <div className="das-stage-labels">
+              {STAGES.map((s, i) => (
+                <div
+                  key={i}
+                  className={`das-stage-label ${currentStage === s ? 'das-stage-active' : ''}`}
+                  style={{ width: `${s.pct[1] - s.pct[0]}%`, color: currentStage === s ? s.color : 'rgba(255,255,255,0.3)' }}
+                >
+                  <span>{s.icon}</span>
+                  <span className="das-stage-text">{s.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Progress numbers */}
+            <div className="das-progress-meta">
+              <span>Day 0</span>
+              <span style={{ color: currentStage?.color || 'white', fontWeight: 700 }}>
+                {isComplete ? '✅ Harvest Ready!' : `Day ${das} / ${effectiveTotalDays}`}
+              </span>
+              <span>Day {effectiveTotalDays}</span>
+            </div>
+          </div>
+
+          {/* Current Stage Card */}
+          {currentStage && !isComplete && (
+            <div
+              className="das-stage-card"
+              style={{ borderColor: currentStage.color, background: `${currentStage.color}10` }}
+            >
+              <div className="das-stage-card-header">
+                <span className="das-stage-card-icon">{currentStage.icon}</span>
+                <div>
+                  <div className="das-stage-card-label" style={{ color: currentStage.color }}>
+                    Current Stage: {currentStage.label}
+                  </div>
+                  <div className="das-stage-card-sub">
+                    Recommended field activities right now:
+                  </div>
+                </div>
+              </div>
+              <ul className="das-activity-list">
+                {currentStage.activities.map((act, i) => (
+                  <li key={i} style={{ borderLeftColor: currentStage.color }}>
+                    <ChevronRight size={13} style={{ color: currentStage.color, flexShrink: 0, marginTop: 2 }} />
+                    {act}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {isComplete && (
+            <div className="das-complete-banner">
+              🏆 <strong>Crop Duration Complete!</strong> Your crop should be ready for harvest.
+              Check grain moisture and prepare market logistics.
+            </div>
+          )}
+        </>
+      )}
+
+      {das === null && (
+        <p className="das-hint">Pick the date you sowed your crop to see stage progress and recommended activities.</p>
+      )}
+    </div>
+  );
+};
+
+// ── Crop Card ────────────────────────────────────────────────────────
+const CropCard = ({ crop, onTrack, isTracking }) => {
+  const sm = STATUS_META[crop.status] || STATUS_META.off_season;
+  return (
+    <div
+      className="cal-crop-card"
+      style={{ borderColor: sm.border, '--card-accent': sm.color }}
+    >
+      {/* Top accent bar */}
+      <div className="cal-card-accent" style={{ background: sm.color }} />
+
+      <div className="cal-card-body">
+        <div className="cal-card-top">
+          <span className="cal-crop-name">{crop.crop}</span>
+          <span className="cal-status-badge" style={{ background: sm.bg, color: sm.color, border: `1px solid ${sm.border}` }}>
+            {sm.icon} {sm.label}
+          </span>
+        </div>
+
+        <div className="cal-card-pills">
+          <span className="cal-pill cal-pill-season">{crop.season}</span>
+          {crop.duration_days && (
+            <span className="cal-pill cal-pill-duration">⏱ {crop.duration_days} days</span>
+          )}
+        </div>
+
+        <div className="cal-window-row">
+          {crop.sow_window?.length > 0 && (
+            <div className="cal-window-item">
+              <span className="cal-window-label">🌱 Sow</span>
+              <span className="cal-window-value">
+                {Array.isArray(crop.sow_window) ? crop.sow_window.join(' – ') : crop.sow_window}
+              </span>
+            </div>
+          )}
+          {crop.harvest_window?.length > 0 && (
+            <div className="cal-window-item">
+              <span className="cal-window-label">🌾 Harvest</span>
+              <span className="cal-window-value">
+                {Array.isArray(crop.harvest_window) ? crop.harvest_window.join(' – ') : crop.harvest_window}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {crop.advisory && (
+          <p className="cal-advisory">{crop.advisory}</p>
+        )}
+
+        <button
+          className={`cal-track-btn ${isTracking ? 'cal-track-btn-active' : ''}`}
+          onClick={() => onTrack(crop)}
+          id={`track-btn-${crop.crop?.replace(/\s+/g, '-').toLowerCase()}`}
+        >
+          {isTracking ? '📍 Tracking This Crop' : '📅 Track DAS Milestones'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ── Main Component ────────────────────────────────────────────────────
 const CropCalendar = () => {
   const { t } = useLanguage();
-  const [form, setForm]       = useState({ state: '', zone: '', season_filter: '' });
-  const [zones, setZones]     = useState([]);
-  const [crops, setCrops]     = useState([]);
-  const [summary, setSummary] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
-  const [searched, setSearched] = useState(false);
-  const [search, setSearch]   = useState('');
+  const [form, setForm]             = useState({ state: '', zone: '', season_filter: '' });
+  const [zones, setZones]           = useState([]);
+  const [crops, setCrops]           = useState([]);
+  const [summary, setSummary]       = useState('');
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState('');
+  const [searched, setSearched]     = useState(false);
+  const [search, setSearch]         = useState('');
+  const [activeSeason, setActiveSeason] = useState('All');
+  const [activeStatus, setActiveStatus] = useState('all');
+  const [trackedCrop, setTrackedCrop]   = useState(null);
 
   useEffect(() => {
     toolsService.getCropCalendarZones()
       .then(d => setZones(d.zones || []))
       .catch(() => {});
   }, []);
-
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const handleFetch = useCallback(async (e) => {
     e?.preventDefault();
@@ -51,120 +295,146 @@ const CropCalendar = () => {
     setSearched(true);
     try {
       const payload = {};
-      if (form.state)         payload.state = form.state;
-      if (form.zone)          payload.zone = form.zone;
-      if (form.season_filter) payload.season_filter = form.season_filter;
+      if (form.state) payload.state = form.state;
+      if (form.zone)  payload.zone  = form.zone;
+      if (activeSeason !== 'All') payload.season_filter = activeSeason;
 
       const data = await toolsService.getCropCalendar(payload);
-      console.log('[CropCalendar] response:', data);
       setCrops(Array.isArray(data.crops) ? data.crops : []);
       setSummary(data.summary || '');
     } catch (err) {
-      console.error('[CropCalendar] error:', err);
       setError(err?.response?.data?.detail || 'Failed to load crop calendar.');
     } finally {
       setLoading(false);
     }
-  }, [form]);
+  }, [form, activeSeason]);
 
-  // Auto-load on mount with default zone
+  // Auto-fetch on mount
   useEffect(() => { handleFetch(); }, []); // eslint-disable-line
 
-  const filtered = crops.filter(c =>
-    !search || c.crop?.toLowerCase().includes(search.toLowerCase())
-  );
+  // Re-fetch when season pill changes
+  const handleSeasonChange = (s) => {
+    setActiveSeason(s);
+    setActiveStatus('all');
+  };
+
+  useEffect(() => {
+    if (searched) handleFetch();
+  }, [activeSeason]); // eslint-disable-line
+
+  const filtered = useMemo(() => {
+    let list = crops;
+    if (search) list = list.filter(c => c.crop?.toLowerCase().includes(search.toLowerCase()));
+    if (activeStatus !== 'all') list = list.filter(c => c.status === activeStatus);
+    return list;
+  }, [crops, search, activeStatus]);
+
+  // Unique statuses present in results
+  const presentStatuses = useMemo(() => {
+    const s = new Set(crops.map(c => c.status));
+    return ['all', ...Object.keys(STATUS_META).filter(k => s.has(k))];
+  }, [crops]);
+
+  const handleTrack = (crop) => {
+    setTrackedCrop(prev => prev?.crop === crop.crop ? null : crop);
+  };
 
   return (
     <div className="tools-page">
       <div className="tools-page-header">
         <div className="tools-page-badge"><CalendarDays size={14} /> {t('cropCalendar')}</div>
         <h1 className="tools-page-title">📅 {t('calendarTitle')}</h1>
-        <p className="tools-page-subtitle">
-          {t('calendarSubtitle')}
-        </p>
+        <p className="tools-page-subtitle">{t('calendarSubtitle')}</p>
       </div>
 
-      {/* Filter bar */}
-      <form className="tools-filter-bar" onSubmit={handleFetch}>
-        <div className="form-group">
+      {/* ── Controls Bar ── */}
+      <div className="cal-controls-bar">
+        {/* State selector */}
+        <div className="form-group cal-state-group">
           <label>📍 State</label>
-          <select value={form.state} onChange={e => set('state', e.target.value)}>
+          <select value={form.state} onChange={e => setForm(f => ({ ...f, state: e.target.value }))} id="cal-state-select">
             <option value="">All India</option>
             {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
-        <div className="form-group">
-          <label>🗺️ Zone</label>
-          <select value={form.zone} onChange={e => set('zone', e.target.value)}>
-            <option value="">Any Zone</option>
-            {zones.map(z => <option key={z} value={z}>{z.replace(/_/g, ' ')}</option>)}
-          </select>
+
+        {/* Season toggle pills */}
+        <div className="cal-season-pills">
+          {SEASONS.map(s => (
+            <button
+              key={s}
+              className={`cal-season-pill ${activeSeason === s ? 'cal-season-pill-active' : ''}`}
+              onClick={() => handleSeasonChange(s)}
+              id={`season-pill-${s.toLowerCase()}`}
+            >
+              {s === 'All' ? '🌐' : s === 'Kharif' ? '🌧️' : s === 'Rabi' ? '❄️' : '☀️'} {s}
+            </button>
+          ))}
         </div>
-        <div className="form-group">
-          <label>🌿 Season</label>
-          <select value={form.season_filter} onChange={e => set('season_filter', e.target.value)}>
-            <option value="">All Seasons</option>
-            <option value="Kharif">Kharif</option>
-            <option value="Rabi">Rabi</option>
-            <option value="Zaid">Zaid</option>
-          </select>
-        </div>
-        <button type="submit" className="tools-filter-btn" disabled={loading}>
+
+        {/* Apply button */}
+        <button className="tools-filter-btn" onClick={handleFetch} disabled={loading} id="cal-apply-btn">
           {loading ? <Loader2 size={16} className="tools-spin" /> : <Search size={16} />}
           {loading ? 'Loading…' : 'Apply'}
         </button>
-      </form>
+      </div>
 
-      {/* Summary banner */}
+      {/* ── DAS Tracker (shown when a crop is tracked) ── */}
+      {trackedCrop && (
+        <DASTracker cropName={trackedCrop.crop} totalDays={trackedCrop.duration_days} />
+      )}
+
+      {/* ── Summary Banner ── */}
       {summary && !loading && (
-        <div style={{
-          padding: '0.85rem 1.25rem',
-          background: 'rgba(16,185,129,0.08)',
-          border: '1px solid rgba(16,185,129,0.2)',
-          borderRadius: '12px',
-          marginBottom: '1.25rem',
-          fontSize: '0.9rem',
-          color: 'rgba(255,255,255,0.8)',
-          lineHeight: 1.6,
-        }}>
-          {summary}
+        <div className="cal-summary-banner">
+          <Sprout size={16} style={{ flexShrink: 0, color: '#10b981', marginTop: 2 }} />
+          <span>{summary}</span>
         </div>
       )}
 
-      {/* Legend */}
+      {/* ── Status Filter Tags ── */}
       {!loading && crops.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.25rem' }}>
-          {Object.values(STATUS_MAP).map(s => (
-            <span key={s.cls} className={`tools-status-badge cal-badge-${s.cls}`}>
-              {s.icon} {s.label}
-            </span>
-          ))}
+        <div className="cal-status-filters">
+          {presentStatuses.map(s => {
+            const meta = s === 'all' ? { label: 'All', icon: '📋', color: '#ffffff', bg: 'rgba(255,255,255,0.08)', border: 'rgba(255,255,255,0.15)' } : STATUS_META[s];
+            const isActive = activeStatus === s;
+            return (
+              <button
+                key={s}
+                className="cal-status-tag"
+                style={{
+                  background: isActive ? meta.bg : 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${isActive ? meta.border : 'rgba(255,255,255,0.1)'}`,
+                  color: isActive ? meta.color : 'rgba(255,255,255,0.5)',
+                }}
+                onClick={() => setActiveStatus(s)}
+                id={`status-filter-${s}`}
+              >
+                {meta.icon} {meta.label}
+              </button>
+            );
+          })}
         </div>
       )}
 
-      {/* Search */}
+      {/* ── Crop Search ── */}
       {crops.length > 0 && (
-        <div style={{ marginBottom: '1.25rem', position: 'relative' }}>
-          <Search size={16} style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.35)', pointerEvents: 'none' }} />
+        <div className="cal-search-wrap">
+          <Search size={15} className="cal-search-icon" />
           <input
             type="text"
             placeholder="Search crop…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{
-              width: '100%', boxSizing: 'border-box',
-              padding: '0.7rem 1rem 0.7rem 2.4rem',
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '10px', color: 'white',
-              fontFamily: 'inherit', fontSize: '0.9rem',
-            }}
+            className="cal-search-input"
+            id="cal-crop-search"
           />
         </div>
       )}
 
       {error && <div className="tools-error"><AlertCircle size={16} /> {error}</div>}
 
+      {/* ── Grid ── */}
       {loading ? (
         <div className="tools-loading">
           {[1,2,3,4,5,6].map(i => <div key={i} className="tools-skeleton" />)}
@@ -176,32 +446,23 @@ const CropCalendar = () => {
           <p>{t('calendarNoData')}</p>
         </div>
       ) : (
-        <div className="tools-cal-grid">
-          {filtered.map((crop, i) => {
-            const statusMeta = getStatus(crop.status);
-            return (
-              <div key={`${crop.crop}-${i}`} className={`tools-cal-item cal-item-${crop.status || 'off_season'}`}>
-                <span className="tools-cal-crop-name">{crop.crop}</span>
-                <div className="tools-cal-meta">
-                  <span className="tools-cal-season">{crop.season}</span>
-                  <span className={`tools-status-badge cal-status-${crop.status || 'off_season'}`}>
-                    {statusMeta.icon} {statusMeta.label}
-                  </span>
-                </div>
-                {crop.sow_window?.length > 0 && (
-                  <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.38)' }}>
-                    Sow: {Array.isArray(crop.sow_window) ? crop.sow_window.join(', ') : crop.sow_window}
-                  </span>
-                )}
-                {crop.advisory && (
-                  <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', margin: '0.35rem 0 0', lineHeight: 1.5 }}>
-                    {crop.advisory}
-                  </p>
-                )}
-              </div>
-            );
-          })}
+        <div className="cal-grid">
+          {filtered.map((crop, i) => (
+            <CropCard
+              key={`${crop.crop}-${i}`}
+              crop={crop}
+              onTrack={handleTrack}
+              isTracking={trackedCrop?.crop === crop.crop}
+            />
+          ))}
         </div>
+      )}
+
+      {/* Disclaimer */}
+      {crops.length > 0 && !loading && (
+        <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.28)', marginTop: '1.5rem', textAlign: 'center' }}>
+          ℹ️ Calendar based on Indian agro-climatic zones. Confirm with your local KVK / Agriculture Extension Officer.
+        </p>
       )}
     </div>
   );

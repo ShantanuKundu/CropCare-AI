@@ -150,12 +150,33 @@
   font-size: 1.1rem;
 }
 
-/* Bottom Grid — Recent Activity (left) + My Farms (right) */
-.bottom-grid {
+/* ══ Two-Column Main Dashboard Grid ══════════════════════ */
+.dashboard-main-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
-  align-items: start;
+  align-items: stretch;   /* both columns equal height */
+  margin-bottom: 2rem;
+}
+
+/* Left column — Recent Activity stretches to fill height */
+.dashboard-activity-col {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-activity-col .activity-list {
+  flex: 1;
+  max-height: none;       /* override fixed 400px so it grows with column */
+  overflow-y: auto;
+}
+
+/* Right column — stacks My Farms above Expense Ledger */
+.dashboard-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .activity-card,
@@ -326,11 +347,8 @@
   .charts-grid {
     grid-template-columns: 1fr;
   }
-  
-  .bottom-grid {
-    grid-template-columns: 1fr;
-  }
 }
+
 
 /* ── Farms Panel (right-side of bottom-grid) ──────── */
 .farms-panel {
@@ -742,3 +760,247 @@
   }
 }
 
+/* ══════════════════════════════════════════════════════
+   KISAN KHATA — Expense Ledger Widget
+═══════════════════════════════════════════════════════ */
+
+.khata-panel {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.khata-panel:hover {
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1);
+}
+
+.khata-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.khata-header h3 {
+  font-size: 1.2rem;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.khata-view-all-link {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #10b981;
+  text-decoration: none;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+
+.khata-view-all-link:hover {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.6);
+  transform: translateX(2px);
+}
+
+/* Summary Metrics Row */
+.khata-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.khata-metric {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem;
+  border-radius: 12px;
+  border: 1px solid;
+  transition: all 0.2s ease;
+}
+
+.khata-metric > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.khata-metric.khata-income {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: #10b981;
+}
+
+.khata-metric.khata-expense {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+
+.khata-metric.khata-net.profit {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+.khata-metric.khata-net.loss {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+.khata-metric.khata-net {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.khata-net-emoji {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.khata-metric-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.khata-metric-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Recent Transactions */
+.khata-entries-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.6rem 0;
+}
+
+.khata-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.khata-entry-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.khata-entry-row:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+  transform: translateX(3px);
+}
+
+.khata-entry-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.khata-entry-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.khata-entry-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.khata-entry-cat {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.khata-entry-amount {
+  font-size: 0.9rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.khata-entry-amount.income { color: #10b981; }
+.khata-entry-amount.expense { color: #f87171; }
+
+.khata-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1.5rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+.khata-empty span { font-size: 2rem; }
+.khata-empty p { margin: 0; }
+.khata-empty a { color: #10b981; text-decoration: underline; }
+
+.khata-loading {
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.95rem;
+}
+
+/* Responsive: stack on smaller screens */
+@media (max-width: 900px) {
+  .dashboard-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-activity-col .activity-list {
+    max-height: 400px;    /* restore cap on mobile so list doesn't get huge */
+  }
+}
+
+@media (max-width: 768px) {
+  .khata-summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 500px) {
+  .khata-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}

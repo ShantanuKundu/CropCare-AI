@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Droplets, Loader2, AlertCircle, Leaf } from 'lucide-react';
+import { Droplets, Loader2, AlertCircle, Leaf, Wind, Thermometer, CloudRain } from 'lucide-react';
 import { toolsService } from '../services/toolsService';
 import { farmService } from '../services/farmService';
 import { useLanguage } from '../context/LanguageContext';
@@ -84,6 +84,85 @@ const IrrigationAdvisory = () => {
   const volume   = result?.volume_per_irrigation;
   const tips     = result?.tips               ?? [];
   const warnings = result?.warnings           ?? [];
+  const weather  = result?.weather            ?? {};
+  const spray    = result?.spray_safety       ?? null;
+
+  // ── Spray Safety Badge Component ────────────────────────────────
+  const SpraySafetyBadge = () => {
+    if (!spray) return null;
+    const colorMap = {
+      green: { bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.4)', text: '#10b981', glow: 'rgba(16,185,129,0.2)' },
+      amber: { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.4)', text: '#f59e0b', glow: 'rgba(245,158,11,0.2)' },
+      red:   { bg: 'rgba(239,68,68,0.12)',  border: 'rgba(239,68,68,0.4)',  text: '#ef4444', glow: 'rgba(239,68,68,0.2)'  },
+    };
+    const c = colorMap[spray.badge] || colorMap.red;
+    const icon = spray.safe ? '✅' : (spray.badge === 'amber' ? '⚠️' : '🚫');
+    return (
+      <div style={{
+        background: c.bg, border: `1px solid ${c.border}`, borderRadius: '16px',
+        padding: '1.25rem 1.5rem', marginBottom: '0', boxShadow: `0 4px 20px ${c.glow}`
+      }}>
+        {/* Status Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.9rem' }}>
+          <span style={{ fontSize: '1.5rem' }}>{icon}</span>
+          <div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 800, color: c.text, letterSpacing: '0.02em' }}>
+              {spray.status}
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.1rem' }}>
+              Weather-based spray safety assessment
+            </div>
+          </div>
+        </div>
+
+        {/* Weather Mini Stats */}
+        {(weather.temperature != null || weather.humidity != null || weather.rainfall_mm != null) && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', marginBottom: '1rem' }}>
+            {weather.temperature != null && (
+              <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '0.6rem 0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Thermometer size={14} color="rgba(255,255,255,0.5)" />
+                <div>
+                  <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.45)' }}>Temperature</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white' }}>{weather.temperature}°C</div>
+                </div>
+              </div>
+            )}
+            {weather.humidity != null && (
+              <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '0.6rem 0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Wind size={14} color="rgba(255,255,255,0.5)" />
+                <div>
+                  <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.45)' }}>Humidity</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white' }}>{weather.humidity}%</div>
+                </div>
+              </div>
+            )}
+            {weather.rainfall_mm != null && (
+              <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '0.6rem 0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <CloudRain size={14} color="rgba(255,255,255,0.5)" />
+                <div>
+                  <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.45)' }}>Rainfall</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white' }}>{weather.rainfall_mm} mm</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Reason List */}
+        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          {spray.reasons.map((reason, i) => (
+            <li key={i} style={{
+              fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)', padding: '0.4rem 0.7rem',
+              background: 'rgba(255,255,255,0.04)', borderRadius: '8px',
+              borderLeft: `3px solid ${c.border}`
+            }}>
+              {reason}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
 
   return (
     <div className="tools-page">
@@ -192,6 +271,16 @@ const IrrigationAdvisory = () => {
             </div>
           ) : (
             <>
+              {/* ── Weather Spray Safety Window ── */}
+              <div className="tools-card" style={{ padding: 0, overflow: 'hidden' }}>
+                <div style={{ padding: '1rem 1.5rem 0.5rem', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                  <h3 className="tools-card-title" style={{ margin: 0 }}>🌤️ Weather & Spray Safety</h3>
+                </div>
+                <div style={{ padding: '1rem 1.5rem 1.5rem' }}>
+                  <SpraySafetyBadge />
+                </div>
+              </div>
+
               {/* Growth Stage */}
               {result.growth_stage_label && (
                 <div className="tools-card">

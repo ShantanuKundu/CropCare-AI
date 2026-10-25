@@ -117,6 +117,13 @@ const Navbar = () => {
                 {t('home')}
               </Link>
 
+              <Link
+                to="/dashboard"
+                className={`nav-link${isActive('/dashboard') ? ' nav-link-active' : ''}`}
+              >
+                {t('dashboard')}
+              </Link>
+
               {/* Services Dropdown */}
               <div className="nav-dropdown" ref={servicesRef}>
                 <button
@@ -227,12 +234,6 @@ const Navbar = () => {
                 )}
               </div>
 
-              <Link
-                to="/dashboard"
-                className={`nav-link${isActive('/dashboard') ? ' nav-link-active' : ''}`}
-              >
-                {t('dashboard')}
-              </Link>
             </div>
 
             {/* Language Selector */}

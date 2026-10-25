@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../context/LanguageContext';
 import { predictionService } from '../services/predictionService';
 import { soilService } from '../services/soilService';
 import { farmService } from '../services/farmService';
-import { Activity, Clock, Map, X, Plus } from 'lucide-react';
+import { khataService } from '../services/khataService';
+import { Activity, Map, X, Plus, TrendingUp, TrendingDown, Wallet, ArrowRight } from 'lucide-react';
 import { useVoiceAssistant } from '../hooks/useVoiceAssistant';
 import { useVoiceFill, ADD_FARM_FIELDS } from '../utils/voiceFormFill';
 import './Dashboard.css';
@@ -36,9 +38,15 @@ const Dashboard = () => {
   const [farmLoading, setFarmLoading] = useState(false);
   const [useCoords, setUseCoords] = useState(false);
 
+  // Kisan Khata state
+  const [khataSummary, setKhataSummary] = useState(null);
+  const [recentKhataEntries, setRecentKhataEntries] = useState([]);
+  const [khataLoading, setKhataLoading] = useState(true);
+
   useEffect(() => {
     console.log('use effect called');
     fetchData();
+    fetchKhataData();
   }, []);
 
   const fetchData = async () => {
@@ -57,8 +65,22 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
-  // console.log(predictions,soilData,farms)
-  
+
+  const fetchKhataData = async () => {
+    try {
+      const [summary, entries] = await Promise.all([
+        khataService.getSummary().catch(() => null),
+        khataService.getEntries().catch(() => []),
+      ]);
+      setKhataSummary(summary);
+      setRecentKhataEntries(entries.slice(0, 3));
+    } catch (err) {
+      console.error('Failed to load khata data:', err);
+    } finally {
+      setKhataLoading(false);
+    }
+  };
+
   const handleFarmFormChange = (e) => {
     setFarmForm({ ...farmForm, [e.target.name]: e.target.value });
   };
@@ -110,11 +132,7 @@ const Dashboard = () => {
     }
   };
 
-
-  const lastActivity = [...predictions, ...soilData]
-    .sort((a, b) => new Date(b.date || b.timestamp) - new Date(a.date || a.timestamp))[0];
-
-  // Recent activity
+  // Recent activity (top 5)
   const recentActivity = [...predictions.map(p => ({
     ...p,
     type: 'prediction',
@@ -126,6 +144,9 @@ const Dashboard = () => {
   }))]
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
     .slice(0, 5);
+
+  const netProfit = khataSummary?.net_profit ?? null;
+  const isProfit = netProfit !== null && netProfit >= 0;
 
   if (loading) {
     return (
@@ -146,28 +167,12 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Quick Stats — Last Activity only */}
-      <div className="stats-grid stats-grid-single">
-        <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'rgba(234, 179, 8, 0.1)' }}>
-            <Clock size={24} color="#eab308" />
-          </div>
-          <div className="stat-content">
-            <span className="stat-label">{t('lastActivity')}</span>
-            <span className="stat-value small">
-              {lastActivity
-                ? new Date(lastActivity.timestamp || lastActivity.date).toLocaleDateString()
-                : 'N/A'}
-            </span>
-          </div>
-        </div>
-      </div>
+      {/* ── Two-Column Main Grid ── */}
+      <div className="dashboard-main-grid">
 
-      {/* Bottom grid: Recent Activity (left) + My Farms (right) */}
-      <div className="bottom-grid">
-        {/* Recent Activity */}
-        <div className="activity-card">
-          <h3>{t('recentActivity')}</h3>
+        {/* ── LEFT: Recent Activity ── */}
+        <div className="activity-card dashboard-activity-col">
+          <h3><Activity size={18} /> {t('recentActivity')}</h3>
           <div className="activity-list">
             {recentActivity.length > 0 ? (
               recentActivity.map((item, index) => (
@@ -193,50 +198,130 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* My Farms */}
-        <div className="farms-panel">
-          <div className="farms-header">
-            <h3>
-              <Map size={18} />
-              {t('myFarms')}
-            </h3>
-            <button
-              className="add-farm-btn"
-              onClick={() => { setShowAddFarm(true); setFarmError(''); }}
-              id="add-farm-btn"
-            >
-              <Plus size={15} />
-              {t('addFarm')}
-            </button>
+        {/* ── RIGHT: Stacked My Farms + Expense Ledger ── */}
+        <div className="dashboard-right-col">
+
+          {/* My Farms */}
+          <div className="farms-panel">
+            <div className="farms-header">
+              <h3>
+                <Map size={18} />
+                {t('myFarms')}
+              </h3>
+              <button
+                className="add-farm-btn"
+                onClick={() => { setShowAddFarm(true); setFarmError(''); }}
+                id="add-farm-btn"
+              >
+                <Plus size={15} />
+                {t('addFarm')}
+              </button>
+            </div>
+
+            {farms.length === 0 ? (
+              <div className="farms-empty">
+                <span>🌾</span>
+                <p>{t('noFarmsYet')}</p>
+              </div>
+            ) : (
+              <div className="farms-list">
+                {farms.map((farm, index) => (
+                  <div key={farm.id || index} className="farm-card">
+                    <div className="farm-card-icon">🌾</div>
+                    <div className="farm-card-body">
+                      <h4 className="farm-name">{farm.farm_name}</h4>
+                      <p className="farm-location">
+                        📍 {farm.location_name || (farm.latitude && farm.longitude
+                          ? `${Number(farm.latitude).toFixed(4)}, ${Number(farm.longitude).toFixed(4)}`
+                          : 'N/A')}
+                      </p>
+                      <span className="farm-area">
+                        {farm.area_hectares} {t('hectares')}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {farms.length === 0 ? (
-            <div className="farms-empty">
-              <span>🌾</span>
-              <p>{t('noFarmsYet')}</p>
+          {/* Expense Ledger (Kisan Khata) */}
+          <div className="khata-panel">
+            <div className="khata-header">
+              <h3><Wallet size={18} /> Expense Ledger</h3>
+              <Link to="/khata" className="khata-view-all-link" id="view-full-ledger-btn">
+                View Full Ledger <ArrowRight size={14} />
+              </Link>
             </div>
-          ) : (
-            <div className="farms-list">
-              {farms.map((farm, index) => (
-                <div key={farm.id || index} className="farm-card">
-                  <div className="farm-card-icon">🌾</div>
-                  <div className="farm-card-body">
-                    <h4 className="farm-name">{farm.farm_name}</h4>
-                    <p className="farm-location">
-                      📍 {farm.location_name || (farm.latitude && farm.longitude
-                        ? `${Number(farm.latitude).toFixed(4)}, ${Number(farm.longitude).toFixed(4)}`
-                        : 'N/A')}
-                    </p>
-                    <span className="farm-area">
-                      {farm.area_hectares} {t('hectares')}
-                    </span>
+
+            {khataLoading ? (
+              <div className="khata-loading">Loading ledger…</div>
+            ) : (
+              <>
+                {/* Summary Metrics */}
+                <div className="khata-summary-grid">
+                  <div className="khata-metric khata-income">
+                    <TrendingUp size={16} />
+                    <div>
+                      <span className="khata-metric-label">Total Income</span>
+                      <span className="khata-metric-value">
+                        ₹{khataSummary ? khataSummary.total_income.toLocaleString('en-IN') : '—'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="khata-metric khata-expense">
+                    <TrendingDown size={16} />
+                    <div>
+                      <span className="khata-metric-label">Total Expense</span>
+                      <span className="khata-metric-value">
+                        ₹{khataSummary ? khataSummary.total_expense.toLocaleString('en-IN') : '—'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className={`khata-metric khata-net ${netProfit !== null ? (isProfit ? 'profit' : 'loss') : ''}`}>
+                    <span className="khata-net-emoji">{isProfit ? '📈' : '📉'}</span>
+                    <div>
+                      <span className="khata-metric-label">Net {isProfit ? 'Profit' : 'Loss'}</span>
+                      <span className="khata-metric-value">
+                        {netProfit !== null
+                          ? `${isProfit ? '+' : ''}₹${Math.abs(netProfit).toLocaleString('en-IN')}`
+                          : '—'}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+
+                {/* Recent Entries Mini List */}
+                <div className="khata-entries">
+                  <p className="khata-entries-label">Recent Transactions</p>
+                  {recentKhataEntries.length > 0 ? (
+                    recentKhataEntries.map((entry) => (
+                      <div key={entry.id} className="khata-entry-row">
+                        <span className="khata-entry-icon">
+                          {entry.transaction_type === 'income' ? '💰' : '💸'}
+                        </span>
+                        <div className="khata-entry-info">
+                          <span className="khata-entry-title">{entry.title}</span>
+                          <span className="khata-entry-cat">{entry.category}</span>
+                        </div>
+                        <span className={`khata-entry-amount ${entry.transaction_type}`}>
+                          {entry.transaction_type === 'income' ? '+' : '-'}₹{entry.amount.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="khata-empty">
+                      <span>📒</span>
+                      <p>No transactions yet. <Link to="/khata">Add your first entry</Link></p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+        </div>{/* end dashboard-right-col */}
+      </div>{/* end dashboard-main-grid */}
 
       {/* Add Farm Modal */}
       {showAddFarm && (

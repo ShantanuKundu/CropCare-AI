@@ -1,0 +1,558 @@
+/* ─────────────────────────────────────────────────────────────────
+   CropCalendar.css — Seasonal Crop Calendar & DAS Tracker styles
+   ───────────────────────────────────────────────────────────────── */
+
+/* ── Controls Bar ───────────────────────────────────────────────── */
+.cal-controls-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 16px;
+}
+
+.cal-state-group {
+  min-width: 200px;
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* ── Season Pills ───────────────────────────────────────────────── */
+.cal-season-pills {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.cal-season-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.cal-season-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.cal-season-pill-active {
+  background: rgba(16, 185, 129, 0.2) !important;
+  border-color: rgba(16, 185, 129, 0.6) !important;
+  color: #10b981 !important;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+}
+
+/* ── Summary Banner ─────────────────────────────────────────────── */
+.cal-summary-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.9rem 1.25rem;
+  background: rgba(16, 185, 129, 0.07);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+}
+
+/* ── Status Filter Tags ─────────────────────────────────────────── */
+.cal-status-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.cal-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.38rem 0.85rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.cal-status-tag:hover {
+  filter: brightness(1.2);
+}
+
+/* ── Crop Search ─────────────────────────────────────────────────── */
+.cal-search-wrap {
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+
+.cal-search-icon {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+
+.cal-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.7rem 1rem 0.7rem 2.4rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: white;
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+
+.cal-search-input:focus {
+  outline: none;
+  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* ── Crop Cards Grid ─────────────────────────────────────────────── */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.cal-crop-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.2s;
+  position: relative;
+}
+
+.cal-crop-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  border-color: var(--card-accent, rgba(16, 185, 129, 0.4));
+}
+
+.cal-card-accent {
+  height: 3px;
+  width: 100%;
+}
+
+.cal-card-body {
+  padding: 1.1rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.cal-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cal-crop-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1.3;
+}
+
+.cal-status-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 50px;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.cal-card-pills {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.cal-pill {
+  font-size: 0.75rem;
+  padding: 0.22rem 0.65rem;
+  border-radius: 50px;
+  font-weight: 600;
+}
+
+.cal-pill-season {
+  background: rgba(96, 165, 250, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(96, 165, 250, 0.25);
+}
+
+.cal-pill-duration {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.cal-window-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.cal-window-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 0.45rem 0.65rem;
+}
+
+.cal-window-label {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cal-window-value {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+}
+
+.cal-advisory {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.55;
+  margin: 0;
+  padding: 0.5rem 0.65rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border-left: 2px solid var(--card-accent, rgba(16, 185, 129, 0.4));
+}
+
+.cal-track-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  margin-top: 0.25rem;
+}
+
+.cal-track-btn:hover {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #10b981;
+}
+
+.cal-track-btn-active {
+  background: rgba(16, 185, 129, 0.18) !important;
+  border-color: rgba(16, 185, 129, 0.55) !important;
+  color: #10b981 !important;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
+}
+
+/* ── DAS Tracker ─────────────────────────────────────────────────── */
+.das-tracker {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  backdrop-filter: blur(12px);
+  animation: das-slide-in 0.35s ease;
+}
+
+@keyframes das-slide-in {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.das-tracker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.1rem;
+}
+
+.das-tracker-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.das-crop-tag {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #10b981;
+  border-radius: 50px;
+}
+
+.das-date-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.das-date-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.das-date-input {
+  padding: 0.5rem 0.9rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: white;
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color-scheme: dark;
+  transition: border-color 0.2s;
+}
+
+.das-date-input:focus {
+  outline: none;
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.das-count-badge {
+  padding: 0.35rem 1rem;
+  background: rgba(167, 139, 250, 0.2);
+  border: 1px solid rgba(167, 139, 250, 0.4);
+  color: #a78bfa;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  animation: pulse-soft 2s infinite;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0); }
+  50%       { box-shadow: 0 0 0 6px rgba(167, 139, 250, 0.1); }
+}
+
+/* ── Progress Bar ─────────────────────────────────────────────────── */
+.das-progress-wrap {
+  margin-bottom: 1.25rem;
+}
+
+.das-stage-bar {
+  position: relative;
+  display: flex;
+  height: 14px;
+  border-radius: 999px;
+  overflow: visible;
+  gap: 2px;
+  margin-bottom: 0.6rem;
+}
+
+.das-stage-segment {
+  flex: none;
+  height: 100%;
+  border-radius: 4px;
+  transition: background 0.6s ease;
+}
+
+.das-needle {
+  position: absolute;
+  top: -5px;
+  width: 4px;
+  height: 24px;
+  background: white;
+  border-radius: 2px;
+  transform: translateX(-50%);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+  transition: left 0.6s ease;
+  z-index: 2;
+}
+
+.das-stage-labels {
+  display: flex;
+  margin-bottom: 0.4rem;
+}
+
+.das-stage-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0 0.25rem;
+  text-align: center;
+  transition: color 0.3s;
+}
+
+.das-stage-text {
+  font-size: 0.65rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.das-stage-active .das-stage-text {
+  font-weight: 800;
+}
+
+.das-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 0.25rem;
+}
+
+/* ── Current Stage Card ──────────────────────────────────────────── */
+.das-stage-card {
+  border: 1px solid;
+  border-radius: 16px;
+  padding: 1.1rem 1.25rem;
+  animation: das-slide-in 0.3s ease;
+}
+
+.das-stage-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.das-stage-card-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.das-stage-card-label {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.das-stage-card-sub {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 0.15rem;
+}
+
+.das-activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.das-activity-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.78);
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  border-left: 3px solid;
+  line-height: 1.5;
+}
+
+/* ── Complete Banner ─────────────────────────────────────────────── */
+.das-complete-banner {
+  padding: 0.9rem 1.25rem;
+  background: rgba(167, 139, 250, 0.12);
+  border: 1px solid rgba(167, 139, 250, 0.4);
+  border-radius: 12px;
+  color: #c4b5fd;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+}
+
+.das-hint {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.35);
+  font-style: italic;
+  text-align: center;
+  margin: 0.5rem 0 0;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .cal-controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cal-season-pills {
+    justify-content: center;
+  }
+
+  .cal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cal-window-row {
+    grid-template-columns: 1fr;
+  }
+
+  .das-date-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .das-stage-text {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .das-tracker {
+    padding: 1rem;
+  }
+
+  .cal-card-body {
+    padding: 0.9rem 1rem 1rem;
+  }
+}

@@ -1,0 +1,299 @@
+/* ══════════════════════════════════════════════
+   KISAN KHATA — Full Ledger Page
+══════════════════════════════════════════════ */
+
+.khata-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.khata-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.khata-page-header h1 {
+  font-size: 2.2rem;
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.3rem;
+}
+
+.khata-page-subtitle {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+}
+
+.khata-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.khata-add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+}
+
+/* Summary Cards Row */
+.khata-page-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.khata-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.2rem 1.4rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.khata-summary-card:hover {
+  transform: translateY(-4px);
+}
+
+.khata-summary-card > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.income-card  { color: #10b981; border-color: rgba(16, 185, 129, 0.25); background: rgba(16, 185, 129, 0.07); }
+.expense-card { color: #f87171; border-color: rgba(239, 68, 68, 0.25); background: rgba(239, 68, 68, 0.07); }
+.net-card.profit { color: #10b981; border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.1); }
+.net-card.loss   { color: #f87171; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); }
+.net-card        { color: rgba(255,255,255,0.6); }
+.count-card      { color: rgba(255,255,255,0.8); }
+
+.ksc-label {
+  font-size: 0.78rem;
+  opacity: 0.75;
+  font-weight: 500;
+}
+
+.ksc-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+/* Filters */
+.khata-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.khata-filter-select,
+.khata-filter-input {
+  padding: 0.65rem 1rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: white;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s ease;
+  min-width: 180px;
+}
+
+.khata-filter-select:focus,
+.khata-filter-input:focus {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.khata-filter-input::placeholder { color: rgba(255,255,255,0.3); }
+.khata-filter-select option { background: #0f1f14; color: white; }
+
+/* Table */
+.khata-table-wrap {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.khata-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.khata-table thead tr {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.khata-table th {
+  padding: 0.9rem 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.khata-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s ease;
+}
+
+.khata-table tbody tr:last-child { border-bottom: none; }
+
+.khata-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.khata-table td {
+  padding: 0.9rem 1rem;
+  color: rgba(255, 255, 255, 0.85);
+  vertical-align: middle;
+}
+
+.khata-td-date { color: rgba(255,255,255,0.5); font-size: 0.82rem; white-space: nowrap; }
+.khata-td-title { font-weight: 600; color: white; }
+.khata-td-crop { color: rgba(255,255,255,0.55); font-size: 0.85rem; }
+
+.khata-td-amount { font-weight: 700; white-space: nowrap; }
+.khata-td-amount.income { color: #10b981; }
+.khata-td-amount.expense { color: #f87171; }
+
+.khata-cat-badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.7);
+}
+
+.khata-type-badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.khata-type-badge.income  { background: rgba(16,185,129,0.15); color: #10b981; }
+.khata-type-badge.expense { background: rgba(239,68,68,0.15);  color: #f87171; }
+
+.khata-delete-btn {
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: rgba(239, 68, 68, 0.6);
+  border-radius: 8px;
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.khata-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.khata-page-loading,
+.khata-page-empty {
+  text-align: center;
+  padding: 3rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.khata-page-empty span { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+
+/* Modal specifics for Khata */
+.khata-modal { max-width: 540px; }
+
+.khata-type-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.khata-toggle-btn {
+  padding: 0.65rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  color: rgba(255,255,255,0.6);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.khata-toggle-btn.active-expense {
+  background: rgba(239,68,68,0.15);
+  border-color: rgba(239,68,68,0.4);
+  color: #f87171;
+}
+
+.khata-toggle-btn.active-income {
+  background: rgba(16,185,129,0.15);
+  border-color: rgba(16,185,129,0.4);
+  color: #10b981;
+}
+
+.khata-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.khata-textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .khata-page-summary { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .khata-page { padding: 1rem; }
+  .khata-page-header h1 { font-size: 1.8rem; }
+  .khata-page-summary { grid-template-columns: 1fr 1fr; }
+  .khata-table { font-size: 0.82rem; }
+  .khata-form-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 440px) {
+  .khata-page-summary { grid-template-columns: 1fr; }
+}

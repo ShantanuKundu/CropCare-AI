@@ -22,6 +22,7 @@ import IrrigationAdvisory from './pages/IrrigationAdvisory';
 import CropCalendar from './pages/CropCalendar';
 import MandiPrices from './pages/MandiPrices';
 import SchemeEligibility from './pages/SchemeEligibility';
+import KisanKhata from './pages/KisanKhata';
 
 function App() {
   return (
@@ -149,6 +150,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <SchemeEligibility />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/khata"
+                  element={
+                    <ProtectedRoute>
+                      <KisanKhata />
                     </ProtectedRoute>
                   }
                 />

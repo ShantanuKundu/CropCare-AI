@@ -1328,10 +1328,10 @@ class IrrigationRequest(BaseModel):
     irrigation_method: Optional[str] = "furrow"
     days_after_sowing: Optional[int] = None
     farm_id: Optional[int] = None          # pulls weather from farm's lat/lon
-    """temperature: Optional[float] = None    # manual override
+    temperature: Optional[float] = None    # manual override (ignored when farm_id given)
     humidity: Optional[float] = None
     rainfall_mm_last7days: Optional[float] = None
-    area_acres: Optional[float] = None"""
+    area_acres: Optional[float] = None
 
 class CalendarRequest(BaseModel):
     state: Optional[str] = None
@@ -1355,7 +1355,7 @@ def get_mandi_prices(
     Set DATAGOVIN_API_KEY in .env for live data.
     Get a free key at https://data.gov.in/
     """
-    from mandi_engine import fetch_mandi_prices
+    from mandi_engine import fetch_mandi_prices, CROP_ALIASES, FALLBACK_PRICES
 
     result = fetch_mandi_prices(
         crop=request.crop,
@@ -1363,8 +1363,16 @@ def get_mandi_prices(
         district=request.district,
         limit=request.limit or 10,
     )
-    return result
 
+    # ── Inject MSP benchmark & Sell/Hold signal ───────────────────
+    api_crop  = CROP_ALIASES.get(request.crop.strip().lower(), request.crop.title())
+    fallback  = FALLBACK_PRICES.get(api_crop)
+    msp_price = fallback["modal"] if fallback else None   # use modal fallback as MSP proxy
+
+    result["msp_price"] = msp_price
+    result["sell_hold"] = _compute_sell_hold(result.get("summary"), msp_price)
+
+    return result
 
 @app.get("/mandi-prices/{crop}")
 def get_mandi_prices_get(
@@ -1376,9 +1384,70 @@ def get_mandi_prices_get(
     """
     GET convenience endpoint: /mandi-prices/rice?state=Punjab&district=Ludhiana
     """
-    from mandi_engine import fetch_mandi_prices
+    from mandi_engine import fetch_mandi_prices, CROP_ALIASES, FALLBACK_PRICES
 
-    return fetch_mandi_prices(crop=crop, state=state, district=district)
+    result   = fetch_mandi_prices(crop=crop, state=state, district=district)
+    api_crop = CROP_ALIASES.get(crop.strip().lower(), crop.title())
+    fallback = FALLBACK_PRICES.get(api_crop)
+    msp_price = fallback["modal"] if fallback else None
+    result["msp_price"] = msp_price
+    result["sell_hold"] = _compute_sell_hold(result.get("summary"), msp_price)
+    return result
+
+
+def _compute_sell_hold(summary: dict | None, msp_price: float | None) -> dict | None:
+    """Returns a sell/hold signal comparing avg_modal_price against MSP."""
+    if not summary or msp_price is None or msp_price <= 0:
+        return None
+
+    modal = summary.get("avg_modal_price")
+    if modal is None:
+        return None
+
+    margin_pct = round(((modal - msp_price) / msp_price) * 100, 1)
+
+    if modal >= msp_price * 1.08:
+        signal   = "STRONG SELL"
+        label    = "STRONG SELL / HIGH DEMAND"
+        badge    = "green"
+        advice   = (
+            f"Market price is {margin_pct:+.1f}% above MSP — exceptional demand. "
+            "Sell now to lock in premium returns."
+        )
+    elif modal >= msp_price:
+        signal   = "SELL"
+        label    = "SELL / ABOVE MSP"
+        badge    = "teal"
+        advice   = (
+            f"Market price is {margin_pct:+.1f}% above MSP. "
+            "Conditions are favourable for selling."
+        )
+    elif modal >= msp_price * 0.92:
+        signal   = "HOLD"
+        label    = "HOLD / NEAR MSP"
+        badge    = "amber"
+        advice   = (
+            f"Price is {margin_pct:+.1f}% below MSP. "
+            "Consider waiting or opting for government MSP procurement."
+        )
+    else:
+        signal   = "HOLD"
+        label    = "HOLD / BELOW MSP"
+        badge    = "red"
+        advice   = (
+            f"Price is {margin_pct:+.1f}% below MSP — market significantly undervaluing crop. "
+            "Strongly consider MSP procurement or storage until prices recover."
+        )
+
+    return {
+        "signal":     signal,
+        "label":      label,
+        "badge":      badge,
+        "margin_pct": margin_pct,
+        "modal_price": modal,
+        "msp_price":  msp_price,
+        "advice":     advice,
+    }
 
 
 # ════════════════════════════════════════════════════════════════════
@@ -1487,6 +1556,37 @@ def irrigation_advisory(
 
     if "error" in result:
         raise HTTPException(status_code=400, detail=result["error"])
+
+    # ── Attach weather snapshot + spray safety assessment ──────────
+    weather_snapshot = {
+        "temperature": round(temperature, 1) if temperature is not None else None,
+        "humidity":    round(humidity, 1)    if humidity    is not None else None,
+        "rainfall_mm": round(rainfall, 1)   if rainfall    is not None else None,
+    }
+
+    # Spray safety logic
+    spray_safe = True
+    spray_reasons = []
+    if rainfall is not None and rainfall > 0.5:
+        spray_safe = False
+        spray_reasons.append(f"Rainfall detected ({round(rainfall, 1)} mm avg/day) — pesticides will wash off.")
+    if humidity is not None and humidity > 85:
+        spray_safe = False
+        spray_reasons.append(f"High humidity ({round(humidity)}%) — slow drying increases fungal risk.")
+    if temperature is not None and temperature > 38:
+        spray_safe = False
+        spray_reasons.append(f"Very high temperature ({round(temperature)}°C) — spray may volatilise rapidly.")
+    if temperature is not None and temperature < 10:
+        spray_safe = False
+        spray_reasons.append(f"Low temperature ({round(temperature)}°C) — poor pesticide absorption.")
+
+    result["weather"] = weather_snapshot
+    result["spray_safety"] = {
+        "safe":   spray_safe,
+        "status": "SAFE TO SPRAY" if spray_safe else "UNSAFE TO SPRAY",
+        "badge":  "green" if spray_safe else ("amber" if (rainfall is not None and rainfall > 0) else "red"),
+        "reasons": spray_reasons if not spray_safe else ["No rain detected, temperature and humidity within acceptable range."],
+    }
 
     return result
 
