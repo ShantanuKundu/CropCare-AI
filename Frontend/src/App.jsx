@@ -23,6 +23,7 @@ import CropCalendar from './pages/CropCalendar';
 import MandiPrices from './pages/MandiPrices';
 import SchemeEligibility from './pages/SchemeEligibility';
 import KisanKhata from './pages/KisanKhata';
+import OutbreakRadar from './pages/OutbreakRadar';
 
 function App() {
   return (
@@ -158,6 +159,15 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <KisanKhata />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/outbreak-radar"
+                  element={
+                    <ProtectedRoute>
+                      <OutbreakRadar />
                     </ProtectedRoute>
                   }
                 />

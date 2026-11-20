@@ -1,5 +1,5 @@
 from fastapi import datastructures
-from fastapi import FastAPI, Depends, HTTPException, status, File, UploadFile
+from fastapi import FastAPI, Depends, HTTPException, status, File, UploadFile, Form
 from fertilizer_engine import get_fertilizer_recommendation 
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
@@ -380,6 +380,16 @@ def safe_float(value, field_name):
             status_code=400,
             detail=f"Invalid value for {field_name}: {value}"
         )
+# ── Haversine Distance Helper ─────────────────────────────────────────────
+import math
+def calculate_haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    R = 6371.0
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
 #-------------------STARTING IF ENDPOINTS---------------------
 #Health check 
 @app.get("/health")
@@ -508,6 +518,7 @@ def preprocess_image(image):
 @app.post("/predict")
 async def predict(
     file: UploadFile = File(...),
+    farm_id: Optional[int] = Form(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -552,9 +563,30 @@ async def predict(
             }
         image_name = file.filename
 
-        #Storing in the database
+        #Storing in the database — resolve farm coords for outbreak radar
+        pred_farm_id = None
+        pred_lat = None
+        pred_lon = None
+
+        if farm_id:
+            farm_obj = db.query(Farm).filter(Farm.id == farm_id, Farm.user_id == current_user.id).first()
+            if farm_obj:
+                pred_farm_id = farm_obj.id
+                pred_lat = farm_obj.latitude
+                pred_lon = farm_obj.longitude
+        else:
+            # Auto-tag with user's first farm if any
+            first_farm = db.query(Farm).filter(Farm.user_id == current_user.id).order_by(Farm.created_at.asc()).first()
+            if first_farm:
+                pred_farm_id = first_farm.id
+                pred_lat = first_farm.latitude
+                pred_lon = first_farm.longitude
+
         new_prediction = Prediction(
             user_id=current_user.id,
+            farm_id=pred_farm_id,
+            latitude=pred_lat,
+            longitude=pred_lon,
             disease=disease_name,
             confidence=confidence,
             image_url=image_url,
@@ -1864,6 +1896,116 @@ async def fusion_analysis(
             status_code=500,
             detail=f"Fusion analysis failed: {str(e)}"
         )
+
+# ══════════════════════════════════════════════════════════════════════════
+#  OUTBREAK RADAR — Hyperlocal Disease Surveillance & Geofence
+# ══════════════════════════════════════════════════════════════════════════
+
+@app.get("/outbreak-radar")
+def outbreak_radar(
+    farm_id:     Optional[int]   = None,
+    radius_km:   float           = 25.0,
+    days:        int             = 30,
+    crop_filter: Optional[str]   = None,
+    current_user: User           = Depends(get_current_user),
+    db:          Session         = Depends(get_db),
+):
+    """
+    Returns nearby non-healthy disease detections within radius_km of the
+    selected farm. Coordinates are jittered ±0.004° for privacy.
+    """
+    import random
+    from datetime import timedelta
+
+    # ── 1. Resolve center farm ──────────────────────────────────────────
+    if farm_id:
+        center_farm = db.query(Farm).filter(
+            Farm.id == farm_id, Farm.user_id == current_user.id
+        ).first()
+    else:
+        center_farm = db.query(Farm).filter(
+            Farm.user_id == current_user.id
+        ).order_by(Farm.created_at.asc()).first()
+
+    if not center_farm:
+        raise HTTPException(
+            status_code=404,
+            detail="No farm found. Add a farm first to use Outbreak Radar."
+        )
+
+    clat, clon = center_farm.latitude, center_farm.longitude
+
+    # ── 2. Query recent non-healthy geotagged predictions ───────────────
+    cutoff = datetime.utcnow() - timedelta(days=days)
+
+    query = db.query(Prediction).filter(
+        Prediction.created_at  >= cutoff,
+        Prediction.latitude    != None,
+        Prediction.longitude   != None,
+        ~Prediction.disease.ilike("%healthy%"),
+    )
+
+    all_records = query.all()
+
+    # ── 3. Haversine filter + privacy jitter ────────────────────────────
+    outbreaks = []
+    for rec in all_records:
+        dist = calculate_haversine_km(clat, clon, rec.latitude, rec.longitude)
+        if dist > radius_km:
+            continue
+
+        # Optional crop filter (match disease name prefix, e.g. "Tomato")
+        if crop_filter and crop_filter.lower() not in rec.disease.lower():
+            continue
+
+        # Extract crop from PlantVillage class name (e.g. "Tomato___Early_Blight" → "Tomato")
+        crop_name = rec.disease.split("___")[0].replace("_", " ").strip() if "___" in rec.disease else "Unknown"
+
+        # Privacy jitter ±0.004°
+        jlat = rec.latitude  + random.uniform(-0.004, 0.004)
+        jlon = rec.longitude + random.uniform(-0.004, 0.004)
+
+        outbreaks.append({
+            "id":          rec.id,
+            "disease":     rec.disease,
+            "crop":        crop_name,
+            "distance_km": round(dist, 2),
+            "latitude":    round(jlat, 6),
+            "longitude":   round(jlon, 6),
+            "detected_at": rec.created_at.isoformat(),
+            "severity":    get_severity([rec.confidence]),
+        })
+
+    outbreaks.sort(key=lambda x: x["distance_km"])
+
+    # ── 4. Summary / alert level ─────────────────────────────────────────
+    total = len(outbreaks)
+    if total == 0:
+        alert_level = "SAFE"
+    elif total <= 3:
+        alert_level = "MODERATE"
+    else:
+        alert_level = "HIGH"
+
+    # Most frequent disease
+    from collections import Counter
+    disease_counts = Counter(o["disease"] for o in outbreaks)
+    high_risk_disease = disease_counts.most_common(1)[0][0] if disease_counts else None
+
+    return {
+        "center": {
+            "latitude":  clat,
+            "longitude": clon,
+            "farm_name": center_farm.farm_name,
+        },
+        "radius_km": radius_km,
+        "summary": {
+            "total_cases":       total,
+            "high_risk_disease": high_risk_disease,
+            "alert_level":       alert_level,
+        },
+        "outbreaks": outbreaks,
+    }
 
 # ════════════════════════════════════════════════════════════════════
 #  KISAN KHATA (FARM EXPENSE & INCOME LEDGER)

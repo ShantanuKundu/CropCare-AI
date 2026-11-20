@@ -128,7 +128,7 @@ const Navbar = () => {
               <div className="nav-dropdown" ref={servicesRef}>
                 <button
                   className={`nav-link dropdown-trigger${
-                    ['/recommend', '/predict', '/fertilizer-recommendation', '/yield-prediction', '/history'].includes(location.pathname)
+                    ['/recommend', '/predict', '/fertilizer-recommendation', '/yield-prediction', '/history', '/outbreak-radar'].includes(location.pathname)
                       ? ' nav-link-active'
                       : ''
                   }`}
@@ -170,6 +170,13 @@ const Navbar = () => {
                     >
                       <span className="dropdown-icon-emoji">📈</span>
                       {t('cropYieldPrediction')}
+                    </button>
+                    <button
+                      onClick={() => handleServiceClick('/outbreak-radar')}
+                      className={`dropdown-item${isActive('/outbreak-radar') ? ' dropdown-item-active' : ''}`}
+                    >
+                      <span className="dropdown-icon-emoji">🛰️</span>
+                      Outbreak Radar
                     </button>
                     <div className="dropdown-divider"></div>
                     <button

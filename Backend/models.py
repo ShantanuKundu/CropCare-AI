@@ -15,6 +15,9 @@ class Prediction(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    farm_id  = Column(Integer, ForeignKey("farms.id"), nullable=True)
+    latitude  = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
 
     disease = Column(String, nullable=False)
     confidence = Column(Float, nullable=False)
